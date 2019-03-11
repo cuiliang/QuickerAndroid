@@ -196,7 +196,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
 
 
         if (requestCode == REQUESTCODE) {
-            if (resultCode == CommonStatusCodes.SUCCESS) {
+            if (resultCode == RESULT_OK) {
 
                 String qrcode = data.getStringExtra("barcode");
 
