@@ -76,7 +76,7 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
         Intent intent = new Intent();// 重新声明一个意图。
         intent.putExtra("barcode", result); // 将three回传到意图中。
         // 通过Intent对象返回结果，调用setResult方法。
-        setResult(CommonStatusCodes.SUCCESS, intent);// resultCode为大于1的数，随意选取，为2即可。
+        setResult(RESULT_OK, intent);
         finish();// 结束当前Activity的生命周期。
     }
 
