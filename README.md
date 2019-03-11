@@ -12,9 +12,9 @@ Quicker 安卓APP
 2. 将电脑屏幕内容显示在app上，在app上实现一些控制。比如模拟鼠标什么的。
 
 
-#贡献者
-感谢各位给Quicker提交代码的大神！
 
-edhlily
+# 贡献者
+感谢各位给Quicker提交代码的大神！
+- edhlily
 
 
