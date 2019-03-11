@@ -5,4 +5,6 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="black_overlay">#66000000</color>
+    <color name="btnPress">#ff671d</color>
+    <color name="bgGrid">#dcdcdc</color>
 </resources>

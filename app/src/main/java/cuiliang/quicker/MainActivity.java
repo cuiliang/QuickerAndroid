@@ -350,18 +350,7 @@ public class MainActivity extends Activity {
     private void updateButton(UpdateButtonsMessage.ButtonItem item) {
         UiButtonItem button = getButtonByIndex(item.Index);
 
-        button.button.setClickable(item.IsEnabled);
-
-
-        if (!item.IsEnabled) {
-
-            button.button.setBackgroundColor(Color.rgb(220, 220, 220));
-
-//            button.textView.setText(item.Label);
-//            button.imageView.setImageBitmap(null);
-        } else {
-            button.button.setBackgroundColor(Color.WHITE);
-        }
+        button.button.setEnabled(item.IsEnabled);
 
         //无论是否禁用，都加载文字和图片
         if (item.Label != null && !item.Label.isEmpty()) {
@@ -529,13 +518,13 @@ public class MainActivity extends Activity {
      */
     private void createButton(GridLayout grid, int rowIndex, int colIndex, final int btnIndex) {
         final LinearLayout btn = new LinearLayout(this);
+        btn.setBackgroundResource(R.drawable.bg_btn_block);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f);
 
 
         btn.setLayoutParams(params);
         btn.setOrientation(LinearLayout.VERTICAL);
         btn.setClickable(false);
-        btn.setBackgroundColor(Color.rgb(220, 220, 220));
         btn.setGravity(Gravity.CENTER);
         btn.setPadding(2, 2, 2, 2);
 
@@ -543,50 +532,13 @@ public class MainActivity extends Activity {
 
 
         // region button event
-        btn.setOnTouchListener(new View.OnTouchListener() {
+        btn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-
-                if (!btn.isClickable()) {
-                    return false;
-                }
-
-
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        btn.setBackgroundColor(Color.rgb(200, 100, 50));
-                        vibrate();
-                        break;
-                    case MotionEvent.ACTION_UP:
-
-                        //set color back to default
-                        btn.setBackgroundColor(Color.WHITE);
-
-                        int btnIndex = (int) v.getTag();
-                        Log.d(TAG, "按钮触摸！" + btnIndex);
-
-                        clientService.getClientManager().sendButtonClickMsg(btnIndex);
-                        break;
-                }
-
-
-                //vibrator.vibrate(new long[]{0,1000}, -1);
-
-                /**
-                 * 创建一次性振动
-                 *
-                 * @param milliseconds 震动时长（ms）
-                 * @param amplitude 振动强度。这必须是1到255之间的值，或者DEFAULT_AMPLITUDE
-                 */
-                //vibrator.vibrate(VibrationEffect.createOneShot(20, 50));
-                //vibrator.vibrate(20);
-
-
-                return true;
+            public void onClick(View v) {
+                int btnIndex = (int) v.getTag();
+                Log.d(TAG, "按钮触摸！" + btnIndex);
+                clientService.getClientManager().sendButtonClickMsg(btnIndex);
             }
-
-
         });
         //endregion
 
