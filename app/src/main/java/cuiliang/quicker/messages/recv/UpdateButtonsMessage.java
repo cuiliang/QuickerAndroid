@@ -7,6 +7,30 @@ public class UpdateButtonsMessage implements MessageBase {
 
     public String ProfileName;
 
+    /// 全局面板数量
+    public int GlobalProfileCount;
+
+    /// <summary>
+    /// 当前全局面板编号
+    /// </summary>
+    public int GlobalPageIndex;
+
+    /// <summary>
+    /// 上下文面板数量
+    /// </summary>
+    public int ContextPageCount;
+
+    /// <summary>
+    /// 当前上下文面板编号
+    /// </summary>
+    public int ContextPageIndex;
+
+    /// <summary>
+    /// 上下文面板切换是否锁定
+    /// </summary>
+    public boolean IsContextPanelLocked;
+
+    //
     public ButtonItem[] Buttons;
 
     @Override
