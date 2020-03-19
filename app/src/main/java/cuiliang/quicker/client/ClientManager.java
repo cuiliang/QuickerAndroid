@@ -35,7 +35,7 @@ import java.net.InetSocketAddress;
  */
 public class ClientManager {
     private static final String TAG = ClientManager.class.getSimpleName();
-
+    private static ClientManager clientManager;
     private ClientConfig _config;
 
 
@@ -49,12 +49,16 @@ public class ClientManager {
     // 连接状态
     private ConnectionStatus _status = ConnectionStatus.Disconnected;
 
-
+    public static ClientManager getInstance() {
+        if (clientManager == null) throw new NullPointerException(
+                "ClientManager还没有初始化，请在bindService成功连接后再调用");
+        return clientManager;
+    }
 
 
     public ClientManager(ClientConfig config) {
         _config = config;
-
+        clientManager = this;
         EventBus.getDefault().register(this);
     }
 
@@ -315,6 +319,16 @@ public class ClientManager {
     }
 
     /**
+     * 请求pc更新面板数据，进行翻页操作
+     *
+     * @param dataPageType 请求面板的类型
+     * @see cuiliang.quicker.messages.send.CommandMessage#DATA_PAGE_GLOBAL_LEFT
+     */
+    public void requestUpdateDataPage(String dataPageType) {
+        sendCommandMsg(CommandMessage.CHANGE_PAGE, dataPageType);
+    }
+
+    /**
      * 发送图片消息
      *
      * @param fileName
@@ -359,7 +373,7 @@ public class ClientManager {
             if (msg.IsLoggedIn){
                 //updateConnectionStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
                 this.changeStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
-            }else{
+            } else {
                 this.changeStatus(ConnectionStatus.LoginFailed, msg.ErrorMessage);
             }
         }

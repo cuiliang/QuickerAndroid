@@ -1,6 +1,7 @@
 package cuiliang.quicker;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -9,12 +10,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Bundle;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
@@ -26,7 +26,6 @@ import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -39,6 +38,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.common.api.CommonStatusCodes;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
@@ -50,18 +57,9 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
+import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
-
-import com.google.android.gms.common.api.CommonStatusCodes;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-
-import android.app.ProgressDialog;
+import cuiliang.quicker.view.DataPageViewPager;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -86,6 +84,8 @@ public class MainActivity extends Activity {
 
     private Intent clientServiceIntent;
     private ServiceConnection conn;
+    private DataPageViewPager globalViewPager;
+    private DataPageViewPager contextViewPager;
 
 
     private ClientService clientService;
@@ -136,7 +136,7 @@ public class MainActivity extends Activity {
 
 
         // 创建action按钮
-        createActionButtons(orientation);
+        createActionButtons();
 
 
         setupUiListeners();
@@ -201,7 +201,7 @@ public class MainActivity extends Activity {
         btnMute = (ImageButton) findViewById(R.id.btnMute);
 
         // 创建action按钮
-        createActionButtons(orientation);
+        createActionButtons();
 
         setupUiListeners();
     }
@@ -347,9 +347,9 @@ public class MainActivity extends Activity {
      *
      * @param item
      */
-    private void updateButton(UpdateButtonsMessage.ButtonItem item) {
-        UiButtonItem button = getButtonByIndex(item.Index);
-
+    private void updateButton(UpdateButtonsMessage.ButtonItem item, int globalPageIndex, int contextPageIndex) {
+        UiButtonItem button = getButtonByIndex(item.Index, new int[]{globalPageIndex, contextPageIndex});
+        if (button == null) return;
         button.button.setEnabled(item.IsEnabled);
 
         //无论是否禁用，都加载文字和图片
@@ -358,7 +358,7 @@ public class MainActivity extends Activity {
             button.textView.setVisibility(View.VISIBLE);
         } else {
             button.textView.setText("");
-            button.textView.setVisibility(View.GONE);
+            button.textView.setVisibility(View.INVISIBLE);
         }
 
 
@@ -383,10 +383,9 @@ public class MainActivity extends Activity {
                     .into(button.imageView);
 
             button.imageView.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             button.imageView.setImageBitmap(null);
-            button.imageView.setVisibility(View.GONE);
+            button.imageView.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -434,155 +433,30 @@ public class MainActivity extends Activity {
     /**
      * 根据序号获取按钮对象
      *
-     * @param index
-     * @return
+     * @param index            按钮编号
+     * @param currentPageIndex 当前页面索引数组，currentPageIndex[0]是全局页面索引，currentPageIndex[1]是上下文页面索引
+     * @return 如果存在返回按钮对象
      */
-    private UiButtonItem getButtonByIndex(int index) {
-
+    private UiButtonItem getButtonByIndex(int index, int[] currentPageIndex) {
         //TODO: 按钮不存在的情况
-
-        return (UiButtonItem) _buttons.get(index);
-    }
-
-    private Integer getButtonIndex(boolean isGlobal, int row, int col){
-        return  (isGlobal ? 0 : 1000000)
-                + row * 1000
-                + col;
+        if (index < 1000000) {
+            return globalViewPager.getActionBtnObject(index, currentPageIndex[0]);
+        } else {
+            return contextViewPager.getActionBtnObject(index, currentPageIndex[1]);
+        }
     }
 
     // region 生成按钮
 
     /**
      * 生成界面按钮
-     *
-     * @param orientation 当前窗口是水平还是竖直的
      */
-    private void createActionButtons(int orientation) {
-
-        GridLayout gridGlobal = (GridLayout) findViewById(R.id.gridLayoutGlobal);
-        GridLayout gridProfile = (GridLayout) findViewById(R.id.gridLayoutProfile);
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            for (int i = 0; i < 12; i++) {
-//                createButton(gridGlobal, i / 3, i % 3, i);
-//            }
-//
-//            for (int i = 0; i < 16; i++) {
-//                createButton(gridProfile, i / 4, i % 4, i + 100);
-//            }
-
-            for(int row =0; row < 4; row ++){
-                for(int col=0; col<3; col ++){
-                    createButton(gridGlobal, row, col, getButtonIndex(true, col, row));
-                }
-            }
-
-            for(int row =0; row <4; row ++){
-                for(int col=0; col<4; col ++){
-                    createButton(gridProfile, row, col, getButtonIndex(false, row, col));
-                }
-            }
-
-
-        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-
-            for(int row =0; row < 3; row ++){
-                for(int col=0; col<4; col ++){
-                    createButton(gridGlobal, row, col, getButtonIndex(true, row, col));
-                }
-            }
-
-            for(int row =0; row <4; row ++){
-                for(int col=0; col<4; col ++){
-                    createButton(gridProfile, row, col, getButtonIndex(false, row, col));
-                }
-            }
-
-//            for (int i = 0; i < 12; i++) {
-//                createButton(gridGlobal, i / 4, i % 4, i);
-//            }
-//
-//            for (int i = 0; i < 16; i++) {
-//                createButton(gridProfile, i / 4, i % 4, i + 100);
-//            }
-        }
+    private void createActionButtons() {
+        globalViewPager = findViewById(R.id.globalView);
+        globalViewPager.initView(true);
+        contextViewPager = findViewById(R.id.contextView);
+        contextViewPager.initView(false);
     }
-
-
-    /**
-     * 创建一个action按钮
-     *
-     * @param grid
-     * @param rowIndex
-     * @param colIndex
-     * @param btnIndex
-     */
-    private void createButton(GridLayout grid, int rowIndex, int colIndex, final int btnIndex) {
-        final LinearLayout btn = new LinearLayout(this);
-        btn.setBackgroundResource(R.drawable.bg_btn_block);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1.0f);
-
-
-        btn.setLayoutParams(params);
-        btn.setOrientation(LinearLayout.VERTICAL);
-        btn.setClickable(false);
-        btn.setGravity(Gravity.CENTER);
-        btn.setPadding(2, 2, 2, 2);
-
-        btn.setTag(btnIndex);
-
-
-        // region button event
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int btnIndex = (int) v.getTag();
-                Log.d(TAG, "按钮触摸！" + btnIndex);
-                clientService.getClientManager().sendButtonClickMsg(btnIndex);
-            }
-        });
-        //endregion
-
-
-        ImageView iv = new ImageView(this);
-        iv.setClickable(false);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(pxFromDp(40), pxFromDp(40));
-
-        iv.setLayoutParams(layoutParams);
-        iv.setAdjustViewBounds(true);
-        iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        iv.setPadding(0, 0, 0, 4);
-
-
-        TextView tv = new TextView(this);
-        tv.setClickable(false);
-        tv.setPadding(0, 4, 0, 0);
-        tv.setEllipsize(TextUtils.TruncateAt.END);
-        tv.setSingleLine(true);
-
-
-        tv.setGravity(Gravity.CENTER);
-        //tv.setText("btn" + btnIndex);
-        btn.addView(iv);
-        btn.addView(tv);
-
-
-        GridLayout.Spec row = GridLayout.spec(rowIndex, 1f);
-        GridLayout.Spec col = GridLayout.spec(colIndex, 1f);
-        GridLayout.LayoutParams gridLayoutParam = new GridLayout.LayoutParams(row, col);
-        gridLayoutParam.setMargins(1, 1, 1, 1);
-        gridLayoutParam.height = 0;
-        gridLayoutParam.width = 0;
-
-
-        grid.addView(btn, gridLayoutParam);
-
-        UiButtonItem item = new UiButtonItem();
-        item.button = btn;
-        item.imageView = iv;
-        item.textView = tv;
-        _buttons.put(btnIndex, item);
-    }
-
     // endregion
 
 
@@ -886,12 +760,28 @@ public class MainActivity extends Activity {
 
         if (originMessage instanceof UpdateButtonsMessage) {
             UpdateButtonsMessage serverMsg = (UpdateButtonsMessage) originMessage;
+            //更新page通用数据
+            DataPageValues.contextPageName = serverMsg.ProfileName;
+            DataPageValues.contextDataPageCount = serverMsg.ContextPageCount;
+            DataPageValues.currentContextPageIndex = serverMsg.ContextPageIndex;
+            DataPageValues.globalDataPageCount = serverMsg.GlobalPageCount;
+            DataPageValues.currentGlobalPageIndex = serverMsg.GlobalPageIndex;
+            DataPageValues.IsContextPanelLocked = serverMsg.IsContextPanelLocked;
+
+            globalViewPager.updatePage(serverMsg.GlobalPageCount, serverMsg.GlobalPageIndex);
+            contextViewPager.updatePage(serverMsg.ContextPageCount,serverMsg.ContextPageIndex);
 
             //if (serverMsg != _lastProcessedMessages.lastUpdateButtonsMessage) {
 
                 _lastProcessedMessages.lastUpdateButtonsMessage = serverMsg;
 
-                Log.d(TAG, "更新" + serverMsg.Buttons.length + "个按钮！");
+            Log.d(TAG, "更新" + serverMsg.Buttons.length + "个按钮！" +
+                    "\nuserName:" + DataPageValues.contextPageName +
+                    "\nglobalDataPageCount:" + DataPageValues.globalDataPageCount +
+                    "\ncurrentGlobalPageIndex:" + DataPageValues.currentGlobalPageIndex +
+                    "\ncontextDataPageCount:" + DataPageValues.contextDataPageCount +
+                    "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex +
+                    "\nButtonIndex:" + serverMsg.Buttons[0].Index);
 
                 txtProfileName.setText(serverMsg.ProfileName);
                 for (UpdateButtonsMessage.ButtonItem btn : serverMsg.Buttons) {
@@ -899,7 +789,7 @@ public class MainActivity extends Activity {
                     //Button button = getButtonByIndex(btn.Index);
 //                            button.setText(btn.Label);
 
-                    updateButton(btn);
+                updateButton(btn, serverMsg.GlobalPageIndex, serverMsg.ContextPageIndex);
 
                 }
 //            } else {
