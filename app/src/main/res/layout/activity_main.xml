@@ -14,8 +14,8 @@
         android:id="@+id/linearLayout"
         android:layout_width="576dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:gravity="bottom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -49,8 +49,8 @@
             android:id="@+id/txtProfileName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:text="TextView"
             app:layout_constraintBottom_toBottomOf="@+id/seekbarVolume"
@@ -111,37 +111,23 @@
 
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.v7.widget.GridLayout
-        android:id="@+id/gridLayoutGlobal"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-
-
-        app:columnCount="3"
+    <cuiliang.quicker.view.DataPageViewPager
+        android:id="@+id/globalView"
+        style="@style/DataPageViewTheme"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toStartOf="@+id/gridLayoutProfile"
+        app:layout_constraintEnd_toStartOf="@+id/contextView"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:rowCount="4">
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </android.support.v7.widget.GridLayout>
-
-    <android.support.v7.widget.GridLayout
-        android:id="@+id/gridLayoutProfile"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="2dp"
-        app:columnCount="4"
+    <cuiliang.quicker.view.DataPageViewPager
+        android:id="@+id/contextView"
+        style="@style/DataPageViewTheme"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_weight="4"
-        app:layout_constraintStart_toEndOf="@+id/gridLayoutGlobal"
-        app:layout_constraintTop_toTopOf="parent"
-        app:rowCount="4">
-
-    </android.support.v7.widget.GridLayout>
-
+        app:layout_constraintStart_toEndOf="@+id/globalView"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

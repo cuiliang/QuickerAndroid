@@ -19,5 +19,9 @@
     <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/black_overlay</item>
     </style>
-
+    <style name="DataPageViewTheme">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_marginBottom">2dp</item>
+    </style>
 </resources>

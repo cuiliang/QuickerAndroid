@@ -13,10 +13,10 @@
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
         android:gravity="bottom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,17 +36,6 @@
             android:src="@android:drawable/ic_lock_silent_mode"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
-
-        <SeekBar
-            android:id="@+id/seekbarVolume"
-            style="@style/Widget.AppCompat.SeekBar"
-            android:layout_width="180dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnMute"
-            app:layout_constraintTop_toTopOf="@+id/btnMute"
-            app:layout_constraintVertical_bias="0.0" />
 
         <ImageButton
             android:id="@+id/btnVoice"
@@ -104,59 +93,56 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/seekbarVolume" />
 
+        <SeekBar
+            android:id="@+id/seekbarVolume"
+            style="@style/Widget.AppCompat.SeekBar"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnMute"
+            app:layout_constraintTop_toTopOf="@+id/btnMute"
+            app:layout_constraintVertical_bias="0.0" />
+
 
     </android.support.constraint.ConstraintLayout>
-
-    <android.support.v7.widget.GridLayout
-        android:id="@+id/gridLayoutGlobal"
-        android:layout_width="0dp"
-
-        android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
-        app:columnCount="4"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="spread_inside"
-        app:layout_constraintVertical_weight="3"
-        app:rowCount="3">
-
-    </android.support.v7.widget.GridLayout>
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/gridLayoutProfile"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayoutGlobal">
+        app:layout_constraintBottom_toTopOf="@+id/contextView"
+        app:layout_constraintTop_toBottomOf="@+id/globalView">
 
         <TextView
             android:id="@+id/txtProfileName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="TextView"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="TextView" />
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.v7.widget.GridLayout
-        android:id="@+id/gridLayoutProfile"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="2dp"
-        app:columnCount="4"
+    <cuiliang.quicker.view.DataPageViewPager
+        android:id="@+id/globalView"
+        style="@style/DataPageViewTheme"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constraintVertical_weight="3" />
+
+    <cuiliang.quicker.view.DataPageViewPager
+        android:id="@+id/contextView"
+        style="@style/DataPageViewTheme"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        app:layout_constraintVertical_weight="4"
-        app:rowCount="4">
-
-    </android.support.v7.widget.GridLayout>
-
+        app:layout_constraintVertical_weight="4" />
 </android.support.constraint.ConstraintLayout>
