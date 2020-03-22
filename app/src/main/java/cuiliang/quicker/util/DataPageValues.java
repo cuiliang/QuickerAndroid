@@ -1,5 +1,7 @@
 package cuiliang.quicker.util;
 
+import com.bumptech.glide.util.Synthetic;
+
 /**
  * Created by Void on 2020/3/12 16:33
  * 用于存放通用page数据。
