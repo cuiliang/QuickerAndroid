@@ -34,18 +34,14 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
 
         mQRCodeView = (ZBarView) findViewById(R.id.zbarview);
         mQRCodeView.setDelegate(this);
-
-        mQRCodeView.startSpot();
     }
 
 
     @Override
     protected void onStart() {
         super.onStart();
-
         requestCodeQRCodePermissions();
-
-
+        mQRCodeView.startSpot();
     }
 
     @Override
@@ -62,6 +58,7 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
 
     private void vibrate() {
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        if (vibrator == null) return;
         vibrator.vibrate(200);
     }
 
@@ -78,6 +75,10 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
         // 通过Intent对象返回结果，调用setResult方法。
         setResult(RESULT_OK, intent);
         finish();// 结束当前Activity的生命周期。
+    }
+
+    @Override
+    public void onCameraAmbientBrightnessChanged(boolean isDark) {
     }
 
     @Override

@@ -161,14 +161,8 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
 
     // 开始扫描二维码
     private void beginScan() {
-
-        if (isGoogleServiceOk) {
-            Intent intent = new Intent(ConfigActivity.this, ScanBarcodeActivity.class);
-            startActivityForResult(intent, REQUESTCODE);
-        } else {
-            Intent intent = new Intent(ConfigActivity.this, QrcodeScanActivity.class);
-            startActivityForResult(intent, REQUESTCODE);// 表示可以返回结果
-        }
+        Intent intent = new Intent(ConfigActivity.this, QrcodeScanActivity.class);
+        startActivityForResult(intent, REQUESTCODE);
     }
 
     private void save() {
