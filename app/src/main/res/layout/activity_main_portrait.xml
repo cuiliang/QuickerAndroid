@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gridLayoutProfile">
+        app:layout_constraintTop_toBottomOf="@+id/contextView">
 
         <ImageButton
             android:id="@+id/btnMute"
@@ -107,23 +107,13 @@
 
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <include
         android:id="@+id/linearLayout2"
+        layout="@layout/layout_page_center_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toTopOf="@+id/contextView"
-        app:layout_constraintTop_toBottomOf="@+id/globalView">
-
-        <TextView
-            android:id="@+id/txtProfileName"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:text="TextView" />
-    </android.support.constraint.ConstraintLayout>
+        app:layout_constraintTop_toBottomOf="@+id/globalView" />
 
     <cuiliang.quicker.view.DataPageViewPager
         android:id="@+id/globalView"

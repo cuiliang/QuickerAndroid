@@ -60,6 +60,7 @@ import cuiliang.quicker.messages.send.TextDataMessage;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
 import cuiliang.quicker.view.DataPageViewPager;
+import cuiliang.quicker.view.ViewPagerCuePoint;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -153,7 +154,7 @@ public class MainActivity extends Activity {
                 ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
                 clientService = binder.getService();
 
-                if (clientService.getClientManager().isConnected() == false){
+                if (!clientService.getClientManager().isConnected()) {
                     Log.d(TAG, "网络未连接，进入配置界面。。。");
                     goConfigActivity(true);
                 }
@@ -186,7 +187,7 @@ public class MainActivity extends Activity {
 
     }
 
-    private void recreateView(){
+    private void recreateView() {
         // 依据屏幕方向加载
         int orientation = getResources().getConfiguration().orientation;
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -216,7 +217,6 @@ public class MainActivity extends Activity {
 
 //        processPcMessage(clientService.getMessageCache().lastVolumeStateMessage);
 //        processPcMessage(clientService.getMessageCache().lastUpdateButtonsMessage);
-
 
 
 //        int orientation = getResources().getConfiguration().orientation;
@@ -284,12 +284,12 @@ public class MainActivity extends Activity {
 //        });
 
         ImageButton btnPc = (ImageButton) findViewById(R.id.btnPc);
-        if (btnPc != null){
+        if (btnPc != null) {
             btnPc
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN,"");
+                            clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
                         }
                     });
         }
@@ -302,7 +302,6 @@ public class MainActivity extends Activity {
         });
 
         ImageButton btnVoice = findViewById(R.id.btnVoice);
-
 
 
         btnVoice.setOnClickListener(new View.OnClickListener() {
@@ -453,23 +452,24 @@ public class MainActivity extends Activity {
      */
     private void createActionButtons() {
         globalViewPager = findViewById(R.id.globalView);
-        globalViewPager.initView(true);
+        ViewPagerCuePoint view = findViewById(R.id.viewpagerCuePoint);
+        globalViewPager.initView(view,true);
         contextViewPager = findViewById(R.id.contextView);
-        contextViewPager.initView(false);
+        contextViewPager.initView(view,false);
     }
     // endregion
 
 
     // region Utility辅助代码
 
-    private void vibrate(){
+    private void vibrate() {
         Vibrator vibrator = (Vibrator) getSystemService(Service.VIBRATOR_SERVICE);
 
         int version = Build.VERSION.SDK_INT;
 
-        if (version >= 26){
+        if (version >= 26) {
             vibrator.vibrate(VibrationEffect.createOneShot(25, 50));
-        }else{
+        } else {
             vibrator.vibrate(25);
         }
     }
@@ -505,7 +505,7 @@ public class MainActivity extends Activity {
         int flags;
         int curApiVersion = android.os.Build.VERSION.SDK_INT;
         // This work only for android 4.4+
-        if(curApiVersion >= Build.VERSION_CODES.KITKAT){
+        if (curApiVersion >= Build.VERSION_CODES.KITKAT) {
             // This work only for android 4.4+
             // hide navigation bar permanently in android activity
             // touch the screen, the navigation bar will not show
@@ -513,7 +513,7 @@ public class MainActivity extends Activity {
                     | View.SYSTEM_UI_FLAG_IMMERSIVE
                     | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
-        }else{
+        } else {
             // touch the screen, the navigation bar will show
             flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         }
@@ -543,6 +543,7 @@ public class MainActivity extends Activity {
 
     /**
      * 进入配置页面，autoReturn指示了联网成功后，是否自动返回主activity
+     *
      * @param autoReturn
      */
     private void goConfigActivity(boolean autoReturn) {
@@ -579,7 +580,7 @@ public class MainActivity extends Activity {
             }
         } else if (requestCode == REQUEST_TAKE_PHOTO) {
             if (resultCode == RESULT_OK) {
-               // readPic();
+                // readPic();
 
                 Bitmap bitmap = ImagePicker.getImageFromResult(this, resultCode, data);
                 sendImage(bitmap);
@@ -597,7 +598,7 @@ public class MainActivity extends Activity {
     /// 开始拍照
     private void beginTakePhoto() {
 
-        if (mDialog != null){
+        if (mDialog != null) {
             Toast.makeText(getApplicationContext(),
                     "照片正在传输中，暂时无法拍照。",
                     Toast.LENGTH_SHORT).show();
@@ -611,7 +612,7 @@ public class MainActivity extends Activity {
     //
     ProgressDialog mDialog;
 
-    private void sendImage(final Bitmap bitmap){
+    private void sendImage(final Bitmap bitmap) {
         Log.d(TAG, "开始发送图片");
 
         mDialog = ProgressDialog.show(MainActivity.this, "Quicker", "正在发送图片，请稍候……");
@@ -636,7 +637,6 @@ public class MainActivity extends Activity {
                         , byteArray);
 
 
-
                 handler.sendEmptyMessage(0);
             }
         });
@@ -650,8 +650,6 @@ public class MainActivity extends Activity {
 //        }
 
 
-
-
     }
 
     Handler handler = new Handler() {
@@ -662,8 +660,6 @@ public class MainActivity extends Activity {
             showToast("已发送图片");
         }
     };
-
-
 
 
     public static Bitmap rotateImage(Bitmap source, float angle) {
@@ -702,7 +698,7 @@ public class MainActivity extends Activity {
         Log.d(TAG, "onResume");
         super.onResume();
 
-        if (clientService != null && clientService.getClientManager() != null){
+        if (clientService != null && clientService.getClientManager() != null) {
             clientService.getClientManager().requestReSendState();
         }
 
@@ -722,7 +718,7 @@ public class MainActivity extends Activity {
         super.onStop();
         // The activity is no longer visible (it is now "stopped")
 
-        if (wakeLock != null){
+        if (wakeLock != null) {
             wakeLock.release();
             wakeLock = null;
         }
@@ -769,11 +765,11 @@ public class MainActivity extends Activity {
             DataPageValues.IsContextPanelLocked = serverMsg.IsContextPanelLocked;
 
             globalViewPager.updatePage(serverMsg.GlobalPageCount, serverMsg.GlobalPageIndex);
-            contextViewPager.updatePage(serverMsg.ContextPageCount,serverMsg.ContextPageIndex);
+            contextViewPager.updatePage(serverMsg.ContextPageCount, serverMsg.ContextPageIndex);
 
             //if (serverMsg != _lastProcessedMessages.lastUpdateButtonsMessage) {
 
-                _lastProcessedMessages.lastUpdateButtonsMessage = serverMsg;
+            _lastProcessedMessages.lastUpdateButtonsMessage = serverMsg;
 
             Log.d(TAG, "更新" + serverMsg.Buttons.length + "个按钮！" +
                     "\nuserName:" + DataPageValues.contextPageName +
@@ -783,15 +779,15 @@ public class MainActivity extends Activity {
                     "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex +
                     "\nButtonIndex:" + serverMsg.Buttons[0].Index);
 
-                txtProfileName.setText(serverMsg.ProfileName);
-                for (UpdateButtonsMessage.ButtonItem btn : serverMsg.Buttons) {
+            txtProfileName.setText(serverMsg.ProfileName);
+            for (UpdateButtonsMessage.ButtonItem btn : serverMsg.Buttons) {
 
-                    //Button button = getButtonByIndex(btn.Index);
+                //Button button = getButtonByIndex(btn.Index);
 //                            button.setText(btn.Label);
 
                 updateButton(btn, serverMsg.GlobalPageIndex, serverMsg.ContextPageIndex);
 
-                }
+            }
 //            } else {
 //                Log.d(TAG, "已经处理过这个消息了。");
 //            }
@@ -801,16 +797,16 @@ public class MainActivity extends Activity {
             VolumeStateMessage volumeStateMessage = (VolumeStateMessage) originMessage;
 
             //if (volumeStateMessage != _lastProcessedMessages.lastVolumeStateMessage) {
-                _lastProcessedMessages.lastVolumeStateMessage = volumeStateMessage;
-                UpdateVolumeState(volumeStateMessage);
+            _lastProcessedMessages.lastVolumeStateMessage = volumeStateMessage;
+            UpdateVolumeState(volumeStateMessage);
 //            }else {
 //                Log.d(TAG, "已经处理过这个消息了。");
 //            }
-        } else if (originMessage instanceof  CommandMessage){
+        } else if (originMessage instanceof CommandMessage) {
 
-            CommandMessage cmdMsg = (CommandMessage)originMessage;
+            CommandMessage cmdMsg = (CommandMessage) originMessage;
             Log.d(TAG, "收到启动语音输入消息。" + cmdMsg.Command);
-            if (cmdMsg.Command.equals(CommandMessage.START_VOICE_INPUT)){
+            if (cmdMsg.Command.equals(CommandMessage.START_VOICE_INPUT)) {
                 Log.d(TAG, "启动语音输入。");
                 startVoiceInput();
             }
@@ -820,6 +816,7 @@ public class MainActivity extends Activity {
 
     /**
      * 网络连接状态改变了。
+     *
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -837,7 +834,7 @@ public class MainActivity extends Activity {
     /**
      * 设置背光亮一段时间
      */
-    void setupScreenLight(){
+    void setupScreenLight() {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyWakeLock");
         wakeLock.acquire(60 * 60 * 1000);

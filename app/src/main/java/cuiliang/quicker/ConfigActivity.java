@@ -28,7 +28,6 @@ import cuiliang.quicker.events.ConnectionStatusChangedEvent;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.CommonStatusCodes;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -52,6 +51,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
     private EditText txtPort;
 
     private EditText txtConnectionCode;
+    private Button btnConnect;
 
     private ClientService clientService;
     private ServiceConnection conn;
@@ -82,7 +82,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         txtPort.setText(preferences.getString("pc_port", "666"));
         txtConnectionCode.setText(preferences.getString("connection_code", "quicker"));
 
-        Button btnConnect = (Button) findViewById(R.id.btnSave);
+        btnConnect = (Button) findViewById(R.id.btnSave);
         final Activity me = this;
 
         btnConnect.setOnClickListener(new View.OnClickListener() {
@@ -160,15 +160,9 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
     }
 
     // 开始扫描二维码
-    private void beginScan(){
-
-        if (isGoogleServiceOk){
-            Intent intent = new Intent(ConfigActivity.this, ScanBarcodeActivity.class);
-            startActivityForResult(intent, REQUESTCODE);
-        }else{
-            Intent intent = new Intent(ConfigActivity.this, QrcodeScanActivity.class);
-            startActivityForResult(intent, REQUESTCODE);// 表示可以返回结果
-        }
+    private void beginScan() {
+        Intent intent = new Intent(ConfigActivity.this, QrcodeScanActivity.class);
+        startActivityForResult(intent, REQUESTCODE);
     }
 
     private void save() {
@@ -177,14 +171,11 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         editor.putString("pc_ip", txtIp.getText().toString());
         editor.putString("pc_port", txtPort.getText().toString());
         editor.putString("connection_code", txtConnectionCode.getText().toString());
-        editor.commit();
+        editor.apply();
 
-        ClientConfig config = new ClientConfig();
-        config.mServerPort = Integer.parseInt(txtPort.getText().toString());
-        config.mServerHost = txtIp.getText().toString();
-        config.ConnectionCode = txtConnectionCode.getText().toString();
-
-        clientService.getClientManager().setConfig(config);
+        ClientConfig.mServerPort = Integer.parseInt(txtPort.getText().toString());
+        ClientConfig.mServerHost = txtIp.getText().toString();
+        ClientConfig.ConnectionCode = txtConnectionCode.getText().toString();
     }
 
 
@@ -205,7 +196,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
                     String[] parts = qrcode.split("\n");
                     txtIp.setText(parts[1]);
                     txtPort.setText(parts[2]);
-                    if (parts.length > 3){
+                    if (parts.length > 3) {
                         txtConnectionCode.setText(parts[3]);
                     }
 
@@ -279,24 +270,31 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
      * @param message 额外的错误消息
      */
     private void updateConnectionStatus(ConnectionStatus status, String message) {
+        btnConnect.setClickable(status != ConnectionStatus.Connecting);
+        btnConnect.setEnabled(status != ConnectionStatus.Connecting);
+        String tmp;
         switch (status) {
             case Connected:
-                txtConnectionStatus.setText("已连接");
+                tmp = "已连接";
                 break;
             case Disconnected:
-                txtConnectionStatus.setText("未连接");
+                tmp = "未连接";
                 break;
             case Connecting:
-                txtConnectionStatus.setText("连接中...");
+                tmp = "连接中...";
                 break;
             case LoggedIn:
-                txtConnectionStatus.setText("已登录");
+                tmp = "已登录";
+                break;
+            default:
+                tmp = "";
                 break;
         }
 
         if (message != null && !message.isEmpty()) {
-            txtConnectionStatus.setText(txtConnectionStatus.getText() + "-" + message);
+            tmp = tmp + "-" + message;
         }
+        txtConnectionStatus.setText(tmp);
     }
 
     @Override

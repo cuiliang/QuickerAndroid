@@ -4,14 +4,14 @@ package cuiliang.quicker.client;
 public class ClientConfig {
 
     // 服务器主机名
-    public String mServerHost;
+    public static String mServerHost;
 
     // 服务器端口
-    public int mServerPort;
+    public static int mServerPort;
 
     // 设备名称
-    public  String DeviceName;
+    public static String DeviceName;
 
     // 连接码
-    public String ConnectionCode;
+    public static String ConnectionCode;
 }

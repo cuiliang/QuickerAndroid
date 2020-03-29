@@ -12,12 +12,14 @@ import java.util.prefs.BackingStoreException;
 import cuiliang.quicker.R;
 import cuiliang.quicker.UiButtonItem;
 import cuiliang.quicker.adapter.GridLayoutAdapter;
+import cuiliang.quicker.util.DataPageValues;
 
 /**
  * Created by Void on 2020/3/19 13:16
  */
 public class DataPageViewPager extends ViewPager {
 
+    private ViewPagerCuePoint cuePointView;
     private GridLayoutAdapter dataPageAdapter;
     /*判断页面是代码切换还是手势手动切换是手势滑动切换page，
     当调用setCurrentItem()方法时，为false*/
@@ -33,7 +35,8 @@ public class DataPageViewPager extends ViewPager {
         super(context, attrs);
     }
 
-    public void initView(final boolean isGlobal) {
+    public void initView(ViewPagerCuePoint view, final boolean isGlobal) {
+        this.cuePointView = view;
         this.isGlobal = isGlobal;
         dataPageAdapter = new GridLayoutAdapter();
         setAdapter(dataPageAdapter);
@@ -49,6 +52,10 @@ public class DataPageViewPager extends ViewPager {
             @Override
             public void onPageSelected(int position) {
                 if (isGesture) dataPageAdapter.updateDatePage(position, isGlobal);
+                if (isGlobal)
+                    cuePointView.updateGlobalCuePoint();
+                else
+                    cuePointView.updateContextCuePoint();
             }
 
             @Override
@@ -75,6 +82,10 @@ public class DataPageViewPager extends ViewPager {
         dataPageAdapter.createPages(getContext(), num, isGlobal);
         dataPageAdapter.notifyDataSetChanged();
         setCurrentItem(index);
+        if (isGlobal)
+            cuePointView.updateGlobalCuePoint();
+        else
+            cuePointView.updateContextCuePoint();
     }
 
     public UiButtonItem getActionBtnObject(int index, int currentPageIndex) {

@@ -4,6 +4,16 @@ import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
+import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.net.InetSocketAddress;
+
 import cuiliang.quicker.BuildConfig;
 import cuiliang.quicker.events.ConnectionStatusChangedEvent;
 import cuiliang.quicker.events.ServerMessageEvent;
@@ -17,17 +27,8 @@ import cuiliang.quicker.messages.send.PhotoMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
 import cuiliang.quicker.messages.send.ToggleMuteMessage;
 import cuiliang.quicker.messages.send.UpdateVolumeMessage;
+import cuiliang.quicker.network.ConnectServiceCallback;
 import cuiliang.quicker.network.MyCodecFactory;
-
-import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
-import java.net.InetSocketAddress;
 
 
 /**
@@ -36,8 +37,6 @@ import java.net.InetSocketAddress;
 public class ClientManager {
     private static final String TAG = ClientManager.class.getSimpleName();
     private static ClientManager clientManager;
-    private ClientConfig _config;
-
 
     private IoSession _session;
 
@@ -56,15 +55,9 @@ public class ClientManager {
     }
 
 
-    public ClientManager(ClientConfig config) {
-        _config = config;
+    public ClientManager() {
         clientManager = this;
         EventBus.getDefault().register(this);
-    }
-
-    // 更新配置
-    public void setConfig(ClientConfig config) {
-        _config = config;
     }
 
 
@@ -91,6 +84,10 @@ public class ClientManager {
      * @param retry
      */
     public void connect(final int retry) {
+        connect(retry, null);
+    }
+
+    public void connect(final int retry, final ConnectServiceCallback callback) {
         this.shutdown();
         _connectThread = new Thread(new Runnable() {
             @Override
@@ -102,14 +99,18 @@ public class ClientManager {
         _connectThread.start();
     }
 
+    private void doConnect(int retryCount) {
+        doConnect(retryCount, null);
+    }
+
     /**
      * 执行建立链接
+     *
      * @param retryCount 重试次数
+     * @param callback   连接回调
      */
-    private void doConnect(int retryCount) {
-
-
-        if (_status == ConnectionStatus.Connecting){
+    private void doConnect(int retryCount, ConnectServiceCallback callback) {
+        if (_status == ConnectionStatus.Connecting) {
             Log.e(TAG, "正在连接服务器，不能重复连接。");
         }
 
@@ -127,8 +128,8 @@ public class ClientManager {
 
         //设置 handler 处理业务逻辑
         _connector.setHandler(new MinaClientHandler());
-        InetSocketAddress mSocketAddress = new InetSocketAddress(_config.mServerHost, _config.mServerPort);
-
+        InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.mServerHost, ClientConfig.mServerPort);
+        Log.i(TAG,"当前进行连接的IP:"+ClientConfig.mServerHost+";端口："+ClientConfig.mServerPort);
         //配置服务器地址
         int count = 0;
         do{
@@ -149,14 +150,14 @@ public class ClientManager {
 
                 if (!mFuture.isConnected()){
                     Throwable e = mFuture.getException();
-                    Log.e(TAG, "链接失败" + e.getMessage());
-
+                    Log.e(TAG, "连接失败" + e.getMessage());
+                    if (callback != null) callback.connectCallback(false, null);
                     changeStatus(ConnectionStatus.Disconnected, e.getLocalizedMessage());
                 }else {
                     _session = mFuture.getSession();
 
                     Log.d(TAG, "连接服务器成功...");
-
+                    if (callback != null) callback.connectCallback(true, null);
                     changeStatus(ConnectionStatus.Connected, "");
 
                     //
@@ -168,7 +169,7 @@ public class ClientManager {
 
             } catch (Exception e) {
                 Log.e(TAG, "连接服务器错误！" + e.toString());
-
+                if (callback != null) callback.connectCallback(false, null);
 
                 releaseConnector();
                 changeStatus(ConnectionStatus.Disconnected, "");
@@ -237,7 +238,7 @@ public class ClientManager {
 
     public void sendLoginMsg(){
         DeviceLoginMessage msg = new DeviceLoginMessage();
-        msg.ConnectionCode = _config.ConnectionCode;
+        msg.ConnectionCode = ClientConfig.ConnectionCode;
         msg.Version = BuildConfig.VERSION_NAME;
         msg.DeviceName = Build.MODEL + "(" + Build.MANUFACTURER + " " + Build.PRODUCT + ")";
 
