@@ -55,6 +55,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
         /**
          * 返回当前service对象
+         *
          * @return
          */
         public ClientService getService() {
@@ -124,7 +125,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
         EventBus.getDefault().unregister(this);
 
-        if (wifiStatusChangeReceiver != null){
+        if (wifiStatusChangeReceiver != null) {
             unregisterReceiver(wifiStatusChangeReceiver);
         }
 
@@ -147,6 +148,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
     /**
      * 返回ClientManager
+     *
      * @return
      */
     public ClientManager getClientManager() {
@@ -156,12 +158,13 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
     /**
      * wifi链接状态改变了, 尝试自动连接
+     *
      * @param event
      */
-    @Subscribe(threadMode =  ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onEventMainThread(WifiStatusChangeEvent event) {
         Log.w(TAG, "收到wifi连接状态变更：" + event.isConnected);
-        if (event.isConnected && getClientManager().getConnectionStatus() == ConnectionStatus.Disconnected){
+        if (event.isConnected && getClientManager().getConnectionStatus() == ConnectionStatus.Disconnected) {
             clientManager.connect(3);
         }
     }
@@ -169,16 +172,17 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
     /**
      * 处理收到的pc消息
+     *
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(ServerMessageEvent event){
+    public void onMessageEvent(ServerMessageEvent event) {
 
         MessageBase originMessage = event.serverMessage;
         if (originMessage instanceof UpdateButtonsMessage) {
             messageCache.lastUpdateButtonsMessage = (UpdateButtonsMessage) originMessage;
         } else if (originMessage instanceof VolumeStateMessage) {
-            messageCache.lastVolumeStateMessage = (VolumeStateMessage)originMessage;
+            messageCache.lastVolumeStateMessage = (VolumeStateMessage) originMessage;
         }
     }
 
@@ -195,8 +199,21 @@ public class ClientService extends Service implements ConnectServiceCallback {
         } else {
             Log.e(TAG, "尝试自动连接失败");
             if (!ipItems.isEmpty() && ipIndex < ipItems.size()) {
-                ClientConfig.mServerHost = ipItems.get(ipIndex++);
-                clientManager.connect(1, this);
+                String tmp = ipItems.get(ipIndex++);
+                /*
+                 * 这里检测IP是否是192.168开头，不是这个开头的ip不进行自动登录。
+                 * 这是为了防止用户使用的不是WiFi，而是移动数据而导致连接异常。
+                 * 不排除用户路由设置的网关不是192.168开头的。暂时不支持这种IP。
+                 * (测试时使用移动数据出现过几十个10开头的IP，这种是不可能连上的，严重影响使用体验)
+                 * 后续应该增加一个取消自动连接按钮。因为局域网内有255个设备，那么会连接244次。
+                 * 这个时间非常长。当然很难遇到
+                 * */
+                if (tmp.startsWith("192.168")) {
+                    ClientConfig.mServerHost=tmp;
+                    clientManager.connect(1, this);
+                } else {
+                    connectCallback(false, null);
+                }
             } else {
                 Log.e(TAG, "自动连接结束，没有扫描到有效ip;ipItems.size:" + ipItems.size());
             }
