@@ -154,7 +154,7 @@ public class MainActivity extends Activity {
                 ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
                 clientService = binder.getService();
 
-                if (clientService.getClientManager().isConnected() == false) {
+                if (!clientService.getClientManager().isConnected()) {
                     Log.d(TAG, "网络未连接，进入配置界面。。。");
                     goConfigActivity(true);
                 }
