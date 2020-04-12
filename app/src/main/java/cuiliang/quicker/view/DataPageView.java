@@ -6,7 +6,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +72,7 @@ public abstract class DataPageView extends GridLayout implements View.OnClickLis
         for (int rowIndex = 0; rowIndex < currentPageRow; rowIndex++)
             for (int colIndex = 0; colIndex < currentPageCol; colIndex++) {
                 View view = LayoutInflater.from(getContext()).inflate(R.layout.layout_action_button, null);
-                LinearLayout actionBtn = view.findViewById(R.id.actionBtn);
+                ViewGroup actionBtn = view.findViewById(R.id.actionBtn);
                 actionBtn.setTag(getButtonIndex(rowIndex, colIndex));
                 actionBtn.setOnClickListener(this);
                 GridLayout.LayoutParams gridLayoutParam = new GridLayout.LayoutParams(

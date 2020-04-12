@@ -1,11 +1,13 @@
 package cuiliang.quicker;
 
-import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
@@ -20,25 +22,24 @@ import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
-import android.support.v7.widget.GridLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.util.SparseArray;
-import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.common.api.CommonStatusCodes;
+import com.kongzue.dialog.listener.InputDialogOkButtonClickListener;
+import com.kongzue.dialog.v2.InputDialog;
+import com.kongzue.dialog.v2.MessageDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -57,23 +58,22 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
+import cuiliang.quicker.network.NetWorkManager;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
+import cuiliang.quicker.util.SPUtils;
+import cuiliang.quicker.util.ShareDataToPCManager;
+import cuiliang.quicker.util.ShareDialog;
+import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
 
     private static final int REQ_CODE_SCAN_BRCODE = 10;
     private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
     static final int REQUEST_TAKE_PHOTO = 1;
-
-
-    SparseArray _buttons = new SparseArray<UiButtonItem>();
-
-
-    // ClientManager clientManager;
 
     private SeekBar seekbarVolume;
 
@@ -240,22 +240,8 @@ public class MainActivity extends Activity {
      * 设置界面按钮的事件处理
      */
     private void setupUiListeners() {
-        ImageButton btnConfig = (ImageButton) findViewById(R.id.btnConfig);
-        btnConfig.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                goConfigActivity(false);
-            }
-        });
-
-
-        btnMute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                clientService.getClientManager().sendToggleMuteMsg();
-            }
-        });
-
+        findViewById(R.id.btnConfig).setOnClickListener(this);
+        btnMute.setOnClickListener(this);
         seekbarVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -272,8 +258,6 @@ public class MainActivity extends Activity {
                 clientService.getClientManager().sendUpdateVolumeMsg(seekBar.getProgress());
             }
         });
-
-
 //        ImageButton btnScanQrcode = (ImageButton) findViewById(R.id.btnPc);
 //        btnScanQrcode.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -283,35 +267,10 @@ public class MainActivity extends Activity {
 //            }
 //        });
 
-        ImageButton btnPc = (ImageButton) findViewById(R.id.btnPc);
-        if (btnPc != null) {
-            btnPc
-                    .setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
-                        }
-                    });
-        }
-
-        findViewById(R.id.btnPhoto).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                beginTakePhoto();
-            }
-        });
-
-        ImageButton btnVoice = findViewById(R.id.btnVoice);
-
-
-        btnVoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startVoiceInput();
-
-
-            }
-        });
+        findViewById(R.id.btnPc).setOnClickListener(this);
+        findViewById(R.id.btnPhoto).setOnClickListener(this);
+        findViewById(R.id.btnVoice).setOnClickListener(this);
+        findViewById(R.id.shareIv).setOnClickListener(this);
     }
 
     /**
@@ -353,6 +312,7 @@ public class MainActivity extends Activity {
 
         //无论是否禁用，都加载文字和图片
         if (item.Label != null && !item.Label.isEmpty()) {
+            item.Label = item.Label.replace("\\n", "\n");
             button.textView.setText(item.Label);
             button.textView.setVisibility(View.VISIBLE);
         } else {
@@ -453,9 +413,9 @@ public class MainActivity extends Activity {
     private void createActionButtons() {
         globalViewPager = findViewById(R.id.globalView);
         ViewPagerCuePoint view = findViewById(R.id.viewpagerCuePoint);
-        globalViewPager.initView(view,true);
+        globalViewPager.initView(view, true);
         contextViewPager = findViewById(R.id.contextView);
-        contextViewPager.initView(view,false);
+        contextViewPager.initView(view, false);
     }
     // endregion
 
@@ -838,6 +798,43 @@ public class MainActivity extends Activity {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyWakeLock");
         wakeLock.acquire(60 * 60 * 1000);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btnVoice:
+                startVoiceInput();
+                break;
+            case R.id.btnPhoto:
+                beginTakePhoto();
+                break;
+            case R.id.btnPc:
+                clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
+                break;
+            case R.id.shareIv://分享
+                shareData();
+                break;
+            case R.id.btnMute:
+                clientService.getClientManager().sendToggleMuteMsg();
+                break;
+            case R.id.btnConfig:
+                goConfigActivity(false);
+                break;
+        }
+    }
+
+    /**
+     * 分享操作
+     */
+    public void shareData() {
+        if (ShareDataToPCManager.getInstant().shareExamine(this, true)) {
+            //得到用户信息后可执行分享操作
+            ShareDialog shareDialog = new ShareDialog(this);
+            shareDialog.showShareDialog();
+        } else {
+            ToastUtils.showShort(this, "接下来的操作需要相关信息");
+        }
     }
 }
 

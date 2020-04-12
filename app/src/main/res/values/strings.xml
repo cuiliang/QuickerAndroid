@@ -78,4 +78,15 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="pick_image_intent_text">选择照片</string>
+
+    <string name="userName">用户名:</string>
+    <string name="inputUserNameHint">请输入用户名</string>
+    <string name="pushCode">推送验证码:</string>
+    <string name="inputPushCodeHint">请输入推送验证码</string>
+    <string name="accept">确定</string>
+
+    <string name="shareInputTitle">接下来的操作需要提供必要信息</string>
+    <string name="shareInputHint">注：仅第一次需要输入，后续可以直接分享。如果需要修改，请前往设置修改。\n \n</string>
+    <string name="inputUserName">请输入用户名。即登陆账号。</string>
+    <string name="inputPushCode">请输入推送验证码。\n 不知道推送验证码是什么？请点击右下角设置，点击设置页面底部文字</string>
 </resources>

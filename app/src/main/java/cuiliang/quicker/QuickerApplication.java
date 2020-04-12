@@ -6,10 +6,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import cuiliang.quicker.util.SPUtils;
+
 public class QuickerApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        SPUtils.init(this);
         closeHideApiDialog();
     }
 
@@ -17,7 +20,7 @@ public class QuickerApplication extends Application {
      * 解决androidP 第一次打开程序出现莫名弹窗
      * 弹窗内容“detected problems with api ”
      */
-    private void closeHideApiDialog(){
+    private void closeHideApiDialog() {
         try {
             Class aClass = Class.forName("android.content.pm.PackageParser$Package");
             Constructor declaredConstructor = aClass.getDeclaredConstructor(String.class);

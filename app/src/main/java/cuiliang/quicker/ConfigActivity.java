@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -35,6 +36,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
+import cuiliang.quicker.util.ShareDataToPCManager;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -157,6 +159,22 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         isGoogleServiceOk = ConnectionResult.SUCCESS == GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
         Log.e(TAG, "GOOGLE 服务可用性：" + isGoogleServiceOk);
 
+    }
+
+    /**
+     * 重置用户的分享信息
+     */
+    public void reSetShareUserData(View view) {
+        ShareDataToPCManager.getInstant().clearUserInfo();
+        ShareDataToPCManager.getInstant().shareExamine(this, true);
+    }
+
+    public void sharePushCodeHelp(View view) {
+        Uri content_url = Uri.parse("https://www.getquicker.net/KC/Help/Doc/connection");
+        Intent intent = new Intent();
+        intent.setAction("android.intent.action.VIEW");
+        intent.setData(content_url);
+        startActivity(intent);
     }
 
     // 开始扫描二维码
