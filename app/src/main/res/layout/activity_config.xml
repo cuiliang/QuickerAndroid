@@ -110,4 +110,23 @@
         app:layout_constraintStart_toStartOf="@+id/txtConnectionStatus"
         app:layout_constraintTop_toBottomOf="@+id/txtConnectionStatus" />
 
+    <Button
+        android:id="@+id/reSetShareUserData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="reSetShareUserData"
+        android:text="重置你的分享信息"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView4" />
+
+    <TextView
+        android:id="@+id/sharePushCodeHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/d_10"
+        android:padding="@dimen/d_10"
+        android:onClick="sharePushCodeHelp"
+        android:text="不知道推送验证码是什么？点击获取帮助"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/reSetShareUserData" />
 </android.support.constraint.ConstraintLayout>
