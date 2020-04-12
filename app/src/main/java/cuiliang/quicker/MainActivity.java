@@ -384,7 +384,7 @@ public class MainActivity extends Activity {
             button.imageView.setVisibility(View.VISIBLE);
         } else {
             button.imageView.setImageBitmap(null);
-            button.imageView.setVisibility(View.INVISIBLE);
+            button.imageView.setVisibility(View.GONE);
         }
     }
 
