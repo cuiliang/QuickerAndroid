@@ -12,7 +12,7 @@ class NetRequestObj(var url: String, var requestCallback: NetWorkManager.Request
 
     init {
         //默认参数格式
-        addHeader("Content-Type", "application/x-www-form-urlencoded")
+        addHeader("Content-Type", "application/json")
     }
 
     /**
