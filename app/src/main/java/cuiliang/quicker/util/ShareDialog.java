@@ -101,7 +101,10 @@ public class ShareDialog implements
     @Override
     public void onSuccess(@NotNull Response response) {
         KLog.e("code:" + response.code() + ";message:" + response.message());
-        handler.post(() -> ToastUtils.showShort(context, "发送成功"));
+        if(response.code() == 200)
+            handler.post(() -> ToastUtils.showShort(context, "发送成功"));
+        else
+            handler.post(() -> ToastUtils.showShort(context, "分享失败！"));
     }
 
     @Override
