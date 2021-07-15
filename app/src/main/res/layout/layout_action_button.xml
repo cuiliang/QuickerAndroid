@@ -27,5 +27,5 @@
         android:ellipsize="end"
         android:gravity="center"
         android:paddingTop="4dp"
-        tools:text="111111" />
+        tools:text="1111111111" />
 </LinearLayout>

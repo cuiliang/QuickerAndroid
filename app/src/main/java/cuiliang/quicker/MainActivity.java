@@ -1,18 +1,16 @@
 package cuiliang.quicker;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.graphics.drawable.PictureDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,10 +21,8 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -36,10 +32,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.google.android.gms.common.api.CommonStatusCodes;
-import com.kongzue.dialog.listener.InputDialogOkButtonClickListener;
-import com.kongzue.dialog.v2.InputDialog;
-import com.kongzue.dialog.v2.MessageDialog;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -58,15 +52,14 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
-import cuiliang.quicker.network.NetWorkManager;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
-import cuiliang.quicker.util.SPUtils;
 import cuiliang.quicker.util.ShareDataToPCManager;
 import cuiliang.quicker.util.ShareDialog;
 import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
+import cuiliang.quicker.svg.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
@@ -95,6 +88,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     // 最后处理的消息，防止重复处理
     private MessageCache _lastProcessedMessages = new MessageCache();
 
+    // fontawesome的svg图标存储服务器
+    private final String svgServer = "https://files.getquicker.net/fa/5.15.3/svgs/{style}/{name}.svg";
+    // 用于显示svg图标
+    private RequestBuilder<PictureDrawable> requestBuilder = null;
+
+
     PowerManager.WakeLock wakeLock;
 
 
@@ -109,11 +108,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 数据初始化
         //
         clientServiceIntent = new Intent(this, ClientService.class);
-
+        requestBuilder = GlideApp.with(this)
+                .as(PictureDrawable.class)
+                .listener(new SvgSoftwareLayerSetter());
         //
         // 界面相关操作
         //
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // 禁止屏幕关闭
@@ -186,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     }
+
 
     private void recreateView() {
         // 依据屏幕方向加载
@@ -336,10 +339,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             button.imageView.setVisibility(View.VISIBLE);
 
         } else if (item.IconFileName != null && !item.IconFileName.isEmpty()) {
-
-            Glide.with(this)
-                    .load(item.IconFileName)
-                    .into(button.imageView);
+            if (item.IconFileName.startsWith("fa:")) {
+                final String[] split = item.IconFileName.substring(3).split("_|:");
+                final String style = split[0].toLowerCase();
+                final String name = split[1]
+                        .replaceAll("([a-z])([A-Z]+)", "$1-$2")
+                        .toLowerCase();
+                requestBuilder
+                        .load(svgServer.replace("{style}", style).replace("{name}", name))
+                        .into(button.imageView);
+            } else if (item.IconFileName.endsWith(".svg")) {
+                requestBuilder
+                        .load(item.IconFileName)
+                        .into(button.imageView);
+            } else {
+                Glide.with(this)
+                        .load(item.IconFileName)
+                        .into(button.imageView);
+            }
 
             button.imageView.setVisibility(View.VISIBLE);
         } else {
@@ -753,7 +770,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 
 
-        } else if (originMessage instanceof VolumeStateMessage) {
+        }
+        else if (originMessage instanceof VolumeStateMessage) {
             VolumeStateMessage volumeStateMessage = (VolumeStateMessage) originMessage;
 
             //if (volumeStateMessage != _lastProcessedMessages.lastVolumeStateMessage) {
@@ -762,7 +780,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }else {
 //                Log.d(TAG, "已经处理过这个消息了。");
 //            }
-        } else if (originMessage instanceof CommandMessage) {
+        }
+        else if (originMessage instanceof CommandMessage) {
 
             CommandMessage cmdMsg = (CommandMessage) originMessage;
             Log.d(TAG, "收到启动语音输入消息。" + cmdMsg.Command);
@@ -796,7 +815,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     void setupScreenLight() {
         PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "MyWakeLock");
+        wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "quicker:MyWakeLock");
         wakeLock.acquire(60 * 60 * 1000);
     }
 
