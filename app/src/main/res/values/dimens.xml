@@ -6,4 +6,5 @@
     <dimen name="d_30">30dp</dimen>
     <dimen name="d_50">50dp</dimen>
     <dimen name="d_100">100dp</dimen>
+    <dimen name="landscape_margin">45dp</dimen>
 </resources>
