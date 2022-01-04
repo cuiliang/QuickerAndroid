@@ -1,8 +1,10 @@
 package cuiliang.quicker.view;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -27,13 +29,26 @@ public class ViewPagerCuePoint extends LinearLayout {
 
     public ViewPagerCuePoint(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setOrientation(LinearLayout.VERTICAL);
         gLayout = new LinearLayout(context);
         cLayout = new LinearLayout(context);
-        gLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+        if(getOrientation()==LinearLayout.HORIZONTAL)
+        {
+            float dpRatio = context.getResources().getDisplayMetrics().density;
+            int pixelForDp = (int)(7 * dpRatio);
+            LinearLayout.LayoutParams lpGlobal=new LinearLayout.LayoutParams(0,LayoutParams.WRAP_CONTENT);
+            lpGlobal.weight=3;
+            lpGlobal.setMargins(0,0,pixelForDp,0);
+            gLayout.setLayoutParams(lpGlobal);
+            //gLayout.setBackgroundColor(Color.RED);
+            LinearLayout.LayoutParams lpContext=new LinearLayout.LayoutParams(0,LayoutParams.WRAP_CONTENT);
+            lpContext.weight=4;
+            lpContext.setMargins(pixelForDp,0,0,0);
+            cLayout.setLayoutParams(lpContext);
+            //cLayout.setBackgroundColor(Color.GREEN);
+        }
+        gLayout.setGravity(Gravity.CENTER);
         addView(gLayout);
-        cLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
-
+        cLayout.setGravity(Gravity.CENTER);
         addView(cLayout);
     }
 
