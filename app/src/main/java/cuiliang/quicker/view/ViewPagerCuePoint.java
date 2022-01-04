@@ -30,8 +30,10 @@ public class ViewPagerCuePoint extends LinearLayout {
         setOrientation(LinearLayout.VERTICAL);
         gLayout = new LinearLayout(context);
         cLayout = new LinearLayout(context);
-
+        gLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
         addView(gLayout);
+        cLayout.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT));
+
         addView(cLayout);
     }
 
