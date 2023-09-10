@@ -3,11 +3,9 @@ package cuiliang.quicker.client;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -96,12 +94,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
         EventBus.getDefault().register(this);
 
         // 启动网络连接
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        ClientConfig.mServerHost = preferences.getString("pc_ip", "192.168.1.148");
-        ClientConfig.mServerPort = Integer.parseInt(preferences.getString("pc_port", "666"));
-        ClientConfig.ConnectionCode = preferences.getString("connection_code", "quicker");
-
-        Log.d(TAG, "连接服务器：" + ClientConfig.mServerHost + " : " + ClientConfig.mServerPort);
+        Log.d(TAG, "连接服务器：" + ClientConfig.getInstance().mServerHost + " : " + ClientConfig.getInstance().mServerPort);
         clientManager = new ClientManager();
         mExecutor.execute(new Runnable() {
             @Override
@@ -166,7 +159,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
     public void onEventMainThread(WifiStatusChangeEvent event) {
         Log.w(TAG, "收到wifi连接状态变更：" + event.isConnected);
         if (event.isConnected && getClientManager().getConnectionStatus() == ConnectionStatus.Disconnected) {
-            clientManager.connect(3);
+            clientManager.connect(3, null);
         }
     }
 
@@ -191,12 +184,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
     public void connectCallback(boolean isSuccess, @Nullable Object obj) {
         if (isSuccess) {
             Log.i(TAG, "自动连接尝试连接成功");
-            PreferenceManager.getDefaultSharedPreferences(this)
-                    .edit()
-                    .putString("pc_ip", ClientConfig.mServerHost)
-                    .putString("pc_port", ClientConfig.mServerPort + "")
-                    .putString("connection_code", ClientConfig.ConnectionCode)
-                    .apply();
+            ClientConfig.getInstance().saveConfig();
         } else {
             Log.e(TAG, "尝试自动连接失败");
             if (!ipItems.isEmpty() && ipIndex < ipItems.size()) {
@@ -210,7 +198,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
                  * 这个时间非常长。当然很难遇到
                  * */
                 if (tmp.startsWith("192.168")) {
-                    ClientConfig.mServerHost=tmp;
+                    ClientConfig.getInstance().mServerHost = tmp;
                     clientManager.connect(1, this);
                 } else {
                     connectCallback(false, null);

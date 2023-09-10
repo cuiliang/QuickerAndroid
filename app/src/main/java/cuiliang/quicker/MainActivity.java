@@ -43,6 +43,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
+import cuiliang.quicker.client.ClientConfig;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.client.MessageCache;
@@ -100,10 +101,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        Log.d(TAG, "onCreate");
-
         super.onCreate(savedInstanceState);
+        //检查程序中是否缓存了网络配置，如果有，跳过配置步骤直接连接服务器
+        if (!ClientConfig.getInstance().hasCache()) {
+            goConfigActivity(true);
+            //在onCreate执行finish()后，后续其他声明周期的方法不会被执行
+            finish();
+            return;
+        }else {
+            ClientConfig.getInstance().readConfig();
+        }
 
         //
         // 数据初始化
@@ -156,11 +163,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "绑定成功调用：onServiceConnected");
                 ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
                 clientService = binder.getService();
-
-                if (!clientService.getClientManager().isConnected()) {
-                    Log.d(TAG, "网络未连接，进入配置界面。。。");
-                    goConfigActivity(true);
-                }
 
                 processPcMessage(clientService.getMessageCache().lastVolumeStateMessage);
                 processPcMessage(clientService.getMessageCache().lastUpdateButtonsMessage);
@@ -397,13 +399,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-
-        //
-        // 启动客户端线程
-        stopService(clientServiceIntent);
-
         super.onDestroy();
+        Log.d(TAG, "onDestroy");
     }
 
 
@@ -525,9 +522,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param autoReturn
      */
     private void goConfigActivity(boolean autoReturn) {
-        Intent intent = new Intent(this, ConfigActivity.class);
-        intent.putExtra("autoReturn", autoReturn);
-        startActivity(intent);
+        startActivity(new Intent(this, ConfigActivity.class));
     }
 
 
@@ -707,6 +702,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //clientService = null;  //保留引用的值，避免空指针问题
             unbindService(conn);
         }
+        if (clientServiceIntent != null) {
+            stopService(clientServiceIntent);
+        }
     }
 
 
@@ -771,8 +769,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 
 
-        }
-        else if (originMessage instanceof VolumeStateMessage) {
+        } else if (originMessage instanceof VolumeStateMessage) {
             VolumeStateMessage volumeStateMessage = (VolumeStateMessage) originMessage;
 
             //if (volumeStateMessage != _lastProcessedMessages.lastVolumeStateMessage) {
@@ -781,8 +778,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }else {
 //                Log.d(TAG, "已经处理过这个消息了。");
 //            }
-        }
-        else if (originMessage instanceof CommandMessage) {
+        } else if (originMessage instanceof CommandMessage) {
 
             CommandMessage cmdMsg = (CommandMessage) originMessage;
             Log.d(TAG, "收到启动语音输入消息。" + cmdMsg.Command);

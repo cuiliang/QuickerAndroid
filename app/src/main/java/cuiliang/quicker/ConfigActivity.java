@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NavUtils;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -36,10 +35,18 @@ import cuiliang.quicker.client.ClientConfig;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.events.ConnectionStatusChangedEvent;
+import cuiliang.quicker.util.SPUtils;
 import cuiliang.quicker.util.ShareDataToPCManager;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+/**
+ * 连接逻辑：
+ * 检查配置文件是否存在网络配置。
+ * 没有配置：直接开始配置网络IP、端口等信息流程
+ * 有配置：读取最近使用的网络配置缓存，在MainActivity直接连接。
+ * 避免已经连接了又返回ConfigActivity界面提示连接
+ */
 public class ConfigActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
 
     private static final int REQUEST_CODE_QRCODE_PERMISSIONS = 1;
@@ -60,16 +67,10 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
 
     private TextView txtConnectionStatus;
 
-    private boolean isAutoReturn = false;
-
     private boolean isGoogleServiceOk = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        Intent intent = getIntent();
-        isAutoReturn = intent.getBooleanExtra("autoReturn", false);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config);
 
@@ -78,45 +79,30 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         txtConnectionCode = (EditText) findViewById(R.id.txtConnectionCode);
         txtConnectionStatus = (TextView) findViewById(R.id.txtConnectionStatus);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        txtIp.setText(preferences.getString("pc_ip", "192.168.1.148"));
-        txtPort.setText(preferences.getString("pc_port", "666"));
-        txtConnectionCode.setText(preferences.getString("connection_code", "quicker"));
+        txtIp.setText(SPUtils.getString("pc_ip", "192.168.1.1"));
+        txtPort.setText(SPUtils.getString("pc_port", "666"));
+        txtConnectionCode.setText(SPUtils.getString("connection_code", "quicker"));
 
         btnConnect = (Button) findViewById(R.id.btnSave);
         final Activity me = this;
 
-        btnConnect.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                save();
-
-
-                if (clientService != null) {
-                    clientService.getClientManager().connect(1);
-                }
+        btnConnect.setOnClickListener(v -> {
+            //连接按钮被点击后应该设为不可点击，直到连接结果返回取消该状态
+            v.setClickable(false);
+            v.setEnabled(false);
+            save();
+            if (clientService != null) {
+                clientService.getClientManager().connect(1, null);
             }
         });
 
         ImageButton btnQrscan = (ImageButton) findViewById(R.id.btnPc);
-        btnQrscan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
-                if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
-                    EasyPermissions.requestPermissions(ConfigActivity.this, "扫描二维码需要打开相机和散光灯的权限", REQUEST_CODE_QRCODE_PERMISSIONS, perms);
-                } else {
-                    beginScan();
-                }
-
-
-//                // 创建意图
-//                Intent intent = new Intent(ConfigActivity.this, QrcodeScanActivity.class);
-//                startActivityForResult(intent, REQUESTCODE);// 表示可以返回结果
-
-
+        btnQrscan.setOnClickListener(v -> {
+            String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
+            if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
+                EasyPermissions.requestPermissions(ConfigActivity.this, "扫描二维码需要打开相机和散光灯的权限", REQUEST_CODE_QRCODE_PERMISSIONS, perms);
+            } else {
+                beginScan();
             }
         });
 
@@ -184,16 +170,10 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
     }
 
     private void save() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("pc_ip", txtIp.getText().toString());
-        editor.putString("pc_port", txtPort.getText().toString());
-        editor.putString("connection_code", txtConnectionCode.getText().toString());
-        editor.apply();
-
-        ClientConfig.mServerPort = Integer.parseInt(txtPort.getText().toString());
-        ClientConfig.mServerHost = txtIp.getText().toString();
-        ClientConfig.ConnectionCode = txtConnectionCode.getText().toString();
+        ClientConfig.getInstance().mServerPort = txtPort.getText().toString();
+        ClientConfig.getInstance().mServerHost = txtIp.getText().toString();
+        ClientConfig.getInstance().ConnectionCode = txtConnectionCode.getText().toString();
+        ClientConfig.getInstance().saveConfig();
     }
 
 
@@ -268,8 +248,9 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         if (event.status == ConnectionStatus.LoggedIn) {
 
             showToast("连接成功！");
-
-            NavUtils.navigateUpFromSameTask(this);
+            Intent goMainActivity=new Intent(this, MainActivity.class);
+            goMainActivity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(goMainActivity);
         }
     }
 
@@ -339,6 +320,5 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
             EasyPermissions.requestPermissions(this, "扫描二维码需要打开相机和散光灯的权限", REQUEST_CODE_QRCODE_PERMISSIONS, perms);
         }
     }
-
 
 }
