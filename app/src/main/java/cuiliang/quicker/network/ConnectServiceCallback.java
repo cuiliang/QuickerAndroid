@@ -1,6 +1,6 @@
 package cuiliang.quicker.network;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * Created by Void on 2020/3/29 14:43

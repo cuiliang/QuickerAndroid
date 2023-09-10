@@ -8,6 +8,8 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import android.util.Log
 import cuiliang.quicker.util.KLog
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
  * Created by Void on 2020/4/12 10:35
@@ -49,7 +51,7 @@ class NetWorkManager : Callback {
         for (s in netRequestObj.getData())
             content.append("\"${s.key}\":\"${s.value}\",")
         content.delete(content.length - 1, content.length).append("}")
-        request.post(RequestBody.create(MediaType.parse("application/json"), content.toString()))
+        request.post(content.toString().toRequestBody("application/json".toMediaType()))
         val call = okHttpClient.newCall(request.build())
         requestList[call] = netRequestObj
         threadPoolExecutor.execute {
@@ -112,7 +114,7 @@ class NetWorkManager : Callback {
                 requestList[call]!!.requestCallback?.onSuccess(response)
                 requestList.remove(call)
             } else {
-                Log.e("EVS_LOG", "一个没有被记录的网络请求！！" + response.message())
+                Log.e("EVS_LOG", "一个没有被记录的网络请求！！" + response.message)
             }
         } catch (e: Exception) {
             e.printStackTrace()

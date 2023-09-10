@@ -8,16 +8,9 @@ import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
-import cuiliang.quicker.events.ServerMessageEvent;
-import cuiliang.quicker.events.WifiStatusChangeEvent;
-import cuiliang.quicker.messages.MessageBase;
-import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
-import cuiliang.quicker.messages.recv.VolumeStateMessage;
-import cuiliang.quicker.network.ConnectServiceCallback;
-import cuiliang.quicker.network.ScanDeviceUtils;
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -28,6 +21,14 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import cuiliang.quicker.events.ServerMessageEvent;
+import cuiliang.quicker.events.WifiStatusChangeEvent;
+import cuiliang.quicker.messages.MessageBase;
+import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
+import cuiliang.quicker.messages.recv.VolumeStateMessage;
+import cuiliang.quicker.network.ConnectServiceCallback;
+import cuiliang.quicker.network.ScanDeviceUtils;
 
 public class ClientService extends Service implements ConnectServiceCallback {
 

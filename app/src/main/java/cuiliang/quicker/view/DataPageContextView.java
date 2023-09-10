@@ -1,20 +1,7 @@
 package cuiliang.quicker.view;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.support.v7.widget.GridLayout;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.LinearLayout;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import cuiliang.quicker.R;
-import cuiliang.quicker.UiButtonItem;
-import cuiliang.quicker.client.ClientManager;
 
 /**
  * Created by Void on 2020/3/9 16:37

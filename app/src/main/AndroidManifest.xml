@@ -24,11 +24,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:name=".QuickerApplication"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme">        
         <activity
             android:name="cuiliang.quicker.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,8 +45,13 @@
         </activity>
         <activity android:name="cuiliang.quicker.QrcodeScanActivity" />
 
+        <activity
+            android:name="cuiliang.quicker.ScanBarcodeActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_scan_barcode"
+            android:theme="@style/FullscreenTheme"/>
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="cuiliang.android.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -54,31 +60,22 @@
                 android:resource="@xml/file_paths" />
         </provider>
         <!--<provider-->
-            <!--android:name="com.activeandroid.content.ContentProvider"-->
-            <!--android:authorities="cuiliang.android"-->
-            <!--android:enabled="true"-->
-            <!--android:exported="false">-->
+        <!--android:name="com.activeandroid.content.ContentProvider"-->
+        <!--android:authorities="cuiliang.android"-->
+        <!--android:enabled="true"-->
+        <!--android:exported="false">-->
         <!--</provider>-->
-
         <service
             android:name="cuiliang.quicker.client.ClientService"
             android:enabled="true"
             android:exported="true" />
-
         <receiver android:name="cuiliang.quicker.client.NetworkStatusChangeReceiver" />
-
         <meta-data
             android:name="com.google.android.gms.vision"
             android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode" />
-
-        <activity
-            android:name="cuiliang.quicker.ScanBarcodeActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_scan_barcode"
-            android:theme="@style/FullscreenTheme"></activity>
     </application>
 
 </manifest>

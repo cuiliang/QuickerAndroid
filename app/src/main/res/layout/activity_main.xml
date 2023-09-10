@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,7 +10,7 @@
     tools:context="cuiliang.quicker.MainActivity"
     tools:layout_editor_absoluteY="73dp">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -109,7 +109,7 @@
             app:layout_constraintTop_toTopOf="@+id/seekbarVolume" />
 
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     <include
         android:id="@+id/linearLayout2"
         layout="@layout/layout_page_center_info_landscape"
@@ -139,4 +139,4 @@
         app:layout_constraintHorizontal_weight="4"
         app:layout_constraintStart_toEndOf="@+id/globalView"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

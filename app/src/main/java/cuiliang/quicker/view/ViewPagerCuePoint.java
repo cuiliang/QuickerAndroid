@@ -1,12 +1,12 @@
 package cuiliang.quicker.view;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.annotation.Nullable;
 
 import cuiliang.quicker.R;
 import cuiliang.quicker.util.DataPageValues;

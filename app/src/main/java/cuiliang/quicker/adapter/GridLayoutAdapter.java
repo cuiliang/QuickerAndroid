@@ -1,10 +1,11 @@
 package cuiliang.quicker.adapter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.PagerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.List;
 import cuiliang.quicker.UiButtonItem;
 import cuiliang.quicker.client.ClientManager;
 import cuiliang.quicker.messages.send.CommandMessage;
-import cuiliang.quicker.messages.send.ToggleMuteMessage;
 import cuiliang.quicker.view.DataPageContextView;
 import cuiliang.quicker.view.DataPageGlobalView;
 import cuiliang.quicker.view.DataPageView;

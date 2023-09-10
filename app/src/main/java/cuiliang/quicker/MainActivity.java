@@ -20,7 +20,6 @@ import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +29,8 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -52,6 +53,7 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
+import cuiliang.quicker.svg.SvgSoftwareLayerSetter;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
 import cuiliang.quicker.util.ShareDataToPCManager;
@@ -59,7 +61,6 @@ import cuiliang.quicker.util.ShareDialog;
 import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
-import cuiliang.quicker.svg.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 数据初始化
         //
         clientServiceIntent = new Intent(this, ClientService.class);
-        requestBuilder = GlideApp.with(this)
+        requestBuilder = Glide.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
         //

@@ -2,13 +2,15 @@ package cuiliang.quicker.svg;
 
 import static com.bumptech.glide.request.target.Target.SIZE_ORIGINAL;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.ResourceDecoder;
 import com.bumptech.glide.load.engine.Resource;
 import com.bumptech.glide.load.resource.SimpleResource;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
+
 import java.io.IOException;
 import java.io.InputStream;
 

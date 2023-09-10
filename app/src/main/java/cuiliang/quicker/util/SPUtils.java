@@ -3,7 +3,8 @@ package cuiliang.quicker.util;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 /**
  * Created by Void on 2020/4/12 13:39
