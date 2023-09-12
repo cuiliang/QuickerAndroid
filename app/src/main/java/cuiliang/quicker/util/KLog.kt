@@ -321,7 +321,7 @@ object KLog {
         if (message.length > MAX_LENGTH) {
             checkLenPrint(level, tag, message)
         } else {
-            val lines = message.split(LINE_SEPARATOR.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            val lines = message.split(LINE_SEPARATOR!!.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (line in lines) {
                 print(level, tag, "║ $line")
             }

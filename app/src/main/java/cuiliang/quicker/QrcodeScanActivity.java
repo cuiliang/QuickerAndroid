@@ -129,7 +129,6 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
         Log.d(TAG, "权限被拒绝!");
-
         finish();
     }
 

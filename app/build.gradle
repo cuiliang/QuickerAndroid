@@ -27,13 +27,15 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    packagingOptions {
+        resources.excludes += "DebugProbesKt.bin"
+    }
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.9.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
@@ -49,9 +51,8 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
     implementation 'cn.bingoogolapple:bga-qrcode-zbar:1.3.7'
     implementation 'cn.bingoogolapple:bga-qrcode-zxing:1.3.7'
-    implementation 'pub.devrel:easypermissions:1.2.0'
+    implementation 'pub.devrel:easypermissions:3.0.0'
     implementation 'org.greenrobot:eventbus:3.1.1'
-    implementation 'com.google.android.gms:play-services-vision:20.1.3'
     //okhttp
     implementation "com.github.bumptech.glide:okhttp3-integration:4.0.0"
     implementation 'com.squareup.okhttp3:okhttp:3.12.0'

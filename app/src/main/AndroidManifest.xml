@@ -44,12 +44,6 @@
                 android:value="cuiliang.quicker.MainActivity" />
         </activity>
         <activity android:name="cuiliang.quicker.QrcodeScanActivity" />
-
-        <activity
-            android:name="cuiliang.quicker.ScanBarcodeActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_scan_barcode"
-            android:theme="@style/FullscreenTheme"/>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="cuiliang.android.fileprovider"
@@ -70,12 +64,6 @@
             android:enabled="true"
             android:exported="true" />
         <receiver android:name="cuiliang.quicker.client.NetworkStatusChangeReceiver" />
-        <meta-data
-            android:name="com.google.android.gms.vision"
-            android:value="@integer/google_play_services_version" />
-        <meta-data
-            android:name="com.google.android.gms.vision.DEPENDENCIES"
-            android:value="barcode" />
     </application>
 
 </manifest>

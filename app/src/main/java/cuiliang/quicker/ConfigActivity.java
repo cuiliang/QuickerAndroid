@@ -6,11 +6,9 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,9 +19,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -100,7 +95,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         btnQrscan.setOnClickListener(v -> {
             String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
             if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
-                EasyPermissions.requestPermissions(ConfigActivity.this, "扫描二维码需要打开相机和散光灯的权限", REQUEST_CODE_QRCODE_PERMISSIONS, perms);
+                requestCodeQRCodePermissions();
             } else {
                 beginScan();
             }
@@ -140,11 +135,6 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
 
         // 隐藏向左的箭头
         getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-
-        //
-        isGoogleServiceOk = ConnectionResult.SUCCESS == GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
-        Log.e(TAG, "GOOGLE 服务可用性：" + isGoogleServiceOk);
-
     }
 
     /**
@@ -248,7 +238,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         if (event.status == ConnectionStatus.LoggedIn) {
 
             showToast("连接成功！");
-            Intent goMainActivity=new Intent(this, MainActivity.class);
+            Intent goMainActivity = new Intent(this, MainActivity.class);
             goMainActivity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(goMainActivity);
         }

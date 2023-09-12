@@ -34,7 +34,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
-import com.google.android.gms.common.api.CommonStatusCodes;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -531,18 +530,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
-
-
-        if (requestCode == REQ_CODE_SCAN_BRCODE) {
-            if (resultCode == CommonStatusCodes.SUCCESS) {
-                String qrcode = data.getStringExtra("barcode");
-                Log.d(TAG, "扫描结果：" + qrcode);
-
-                clientService.getClientManager().sendTextMsg(TextDataMessage.TYPE_QRCODE, qrcode);
-
-
-            }
-        } else if (requestCode == VOICE_RECOGNITION_REQUEST_CODE) {
+        if (requestCode == VOICE_RECOGNITION_REQUEST_CODE) {
             if (resultCode == RESULT_OK && data != null) {
                 //返回结果是一个list，我们一般取的是第一个最匹配的结果
                 ArrayList<String> text = data
