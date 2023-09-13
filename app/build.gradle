@@ -60,4 +60,6 @@ dependencies {
     implementation 'com.squareup.okio:okio:3.2.0'
     //dialog
     implementation 'com.kongzue.dialog:dialog:2.5.2'
+    //kotlin协程
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

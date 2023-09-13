@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,7 +32,6 @@ import cuiliang.quicker.client.ClientConfig;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.events.ConnectionStatusChangedEvent;
-import cuiliang.quicker.util.SPUtils;
 import cuiliang.quicker.util.ShareDataToPCManager;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -43,6 +44,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * 避免已经连接了又返回ConfigActivity界面提示连接
  */
 public class ConfigActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
+    private final Handler mHandler=new Handler(Looper.getMainLooper());
 
     private static final int REQUEST_CODE_QRCODE_PERMISSIONS = 1;
 
@@ -55,14 +57,14 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
     private EditText txtPort;
 
     private EditText txtConnectionCode;
+    private EditText etWebSocketPort;
+    private EditText etWebSocketCode;
     private Button btnConnect;
 
     private ClientService clientService;
     private ServiceConnection conn;
 
     private TextView txtConnectionStatus;
-
-    private boolean isGoogleServiceOk = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +75,14 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         txtPort = (EditText) findViewById(R.id.txtPort);
         txtConnectionCode = (EditText) findViewById(R.id.txtConnectionCode);
         txtConnectionStatus = (TextView) findViewById(R.id.txtConnectionStatus);
+        etWebSocketPort = (EditText) findViewById(R.id.et_websocket_port);
+        etWebSocketCode = (EditText) findViewById(R.id.et_websocket_code);
 
-        txtIp.setText(SPUtils.getString("pc_ip", "192.168.1.1"));
-        txtPort.setText(SPUtils.getString("pc_port", "666"));
-        txtConnectionCode.setText(SPUtils.getString("connection_code", "quicker"));
+        txtIp.setText(ClientConfig.getInstance().mServerHost);
+        txtPort.setText(ClientConfig.getInstance().mServerPort);
+        txtConnectionCode.setText(ClientConfig.getInstance().ConnectionCode);
+        etWebSocketPort.setText(ClientConfig.getInstance().webSocketPort);
+        etWebSocketCode.setText(ClientConfig.getInstance().webSocketCode);
 
         btnConnect = (Button) findViewById(R.id.btnSave);
         final Activity me = this;
@@ -85,6 +91,11 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
             //连接按钮被点击后应该设为不可点击，直到连接结果返回取消该状态
             v.setClickable(false);
             v.setEnabled(false);
+            mHandler.postDelayed(() -> {
+                v.setClickable(true);
+                v.setEnabled(true);
+            },3000);
+
             save();
             if (clientService != null) {
                 clientService.getClientManager().connect(1, null);
@@ -163,6 +174,8 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
         ClientConfig.getInstance().mServerPort = txtPort.getText().toString();
         ClientConfig.getInstance().mServerHost = txtIp.getText().toString();
         ClientConfig.getInstance().ConnectionCode = txtConnectionCode.getText().toString();
+        ClientConfig.getInstance().webSocketPort = etWebSocketPort.getText().toString();
+        ClientConfig.getInstance().webSocketCode = etWebSocketCode.getText().toString();
         ClientConfig.getInstance().saveConfig();
     }
 
@@ -259,6 +272,7 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
      * @param message 额外的错误消息
      */
     private void updateConnectionStatus(ConnectionStatus status, String message) {
+        mHandler.removeCallbacks(null);
         btnConnect.setClickable(status != ConnectionStatus.Connecting);
         btnConnect.setEnabled(status != ConnectionStatus.Connecting);
         String tmp;

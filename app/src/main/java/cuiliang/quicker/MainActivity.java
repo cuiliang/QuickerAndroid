@@ -20,6 +20,7 @@ import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -30,7 +31,9 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -53,11 +56,17 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
+import cuiliang.quicker.network.websocket.MessageType;
+import cuiliang.quicker.network.websocket.MsgRequestData;
+import cuiliang.quicker.network.websocket.WebSocketClient;
+import cuiliang.quicker.network.websocket.WebSocketNetListener;
 import cuiliang.quicker.svg.SvgSoftwareLayerSetter;
+import cuiliang.quicker.ui.taskManager.TaskConfig;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
 import cuiliang.quicker.util.ShareDataToPCManager;
 import cuiliang.quicker.util.ShareDialog;
+import cuiliang.quicker.util.SystemUtils;
 import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
@@ -107,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //在onCreate执行finish()后，后续其他声明周期的方法不会被执行
             finish();
             return;
-        }else {
+        } else {
             ClientConfig.getInstance().readConfig();
         }
 
@@ -118,6 +127,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         requestBuilder = Glide.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
+        // 给图标增加加载动画
+        AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(this, R.drawable.anim_load);
+        if (anim != null) {
+            anim.start();
+            requestBuilder = requestBuilder.placeholder(anim);
+        }
         //
         // 界面相关操作
         //
@@ -658,6 +673,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
+        //websocket连接
+        WebSocketClient.Companion.instance().connectRequest((result, m) -> {
+            //WebSocket连接成功的消息，这里的成功指获取到pc发过来的动作列表后的阶段
+            //给PC发送一条连接成功通知
+            WebSocketClient.Companion.instance().newCall(new ConnectedHint());
+            return null;
+        });
 
         if (clientService != null && clientService.getClientManager() != null) {
             clientService.getClientManager().requestReSendState();
@@ -838,6 +860,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             shareDialog.showShareDialog();
         } else {
             ToastUtils.showShort(this, "接下来的操作需要相关信息");
+        }
+    }
+
+    private class ConnectedHint extends WebSocketNetListener {
+
+        @NonNull
+        @Override
+        public MsgRequestData onRequest(@NonNull MsgRequestData data) {
+            String actionID = TaskConfig.INSTANCE.getACTION_LIST().get("通知");
+            actionID = TextUtils.isEmpty(actionID) ? "" : actionID;
+            int batteryNum = SystemUtils.INSTANCE.getSystemBattery(getApplicationContext());
+            StringBuilder msg = new StringBuilder("当前电量");
+            msg.append(batteryNum);
+            if (75 <= batteryNum) {
+                msg.append(",电量充足");
+            } else if (35 <= batteryNum) {
+                msg.append(",这些电量出门没安全感");
+            } else {
+                msg.append(",快没电了！");
+            }
+            data.setData(
+                    MessageType.REQUEST_COMMAND.getValue(),
+                    "action",
+                    msg.toString(),
+                    actionID,
+                    "",
+                    false
+            );
+            return data;
         }
     }
 }

@@ -27,6 +27,7 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.network.ConnectServiceCallback;
 import cuiliang.quicker.network.ScanDeviceUtils;
+import cuiliang.quicker.network.websocket.WebSocketClient;
 
 public class ClientService extends Service implements ConnectServiceCallback {
 
@@ -94,7 +95,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
         EventBus.getDefault().register(this);
 
         // 启动网络连接
-        Log.d(TAG, "连接服务器：" + ClientConfig.getInstance().mServerHost + " : " + ClientConfig.getInstance().mServerPort);
+        Log.d(TAG, "连接服务器：" + ClientConfig.getInstance().mServerHost + ":" + ClientConfig.getInstance().mServerPort);
         clientManager = new ClientManager();
         mExecutor.execute(new Runnable() {
             @Override
@@ -125,6 +126,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
 
 
         clientManager.shutdown();
+        WebSocketClient.Companion.instance().closeRequest();
     }
 
     @Override
