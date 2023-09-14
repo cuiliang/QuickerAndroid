@@ -2,7 +2,9 @@ package cuiliang.quicker.svg;
 
 import android.content.Context;
 import android.graphics.drawable.PictureDrawable;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.Registry;
@@ -11,6 +13,7 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.module.AppGlideModule;
 import com.caverock.androidsvg.SVG;
+
 import java.io.InputStream;
 import java.security.cert.CertificateException;
 
@@ -21,20 +24,19 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 
 /** Module for the SVG sample app. */
 @GlideModule
 public class SvgModule extends AppGlideModule {
   @Override
-  public void registerComponents(
-      @NonNull Context context, @NonNull Glide glide, @NonNull Registry registry)
-  {
+  public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry)  {
       OkHttpClient okHttpClient= getUnsafeOkHttpClient();
       registry
         .register(SVG.class, PictureDrawable.class, new SvgDrawableTranscoder())
         .append(InputStream.class, SVG.class, new SvgDecoder())
-        .replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(okHttpClient)); // 解决https的问题 https://stackoverflow.com/questions/49557070/glide-v4-load-https-images
+        .replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory((Call.Factory) okHttpClient)); // 解决https的问题 https://stackoverflow.com/questions/49557070/glide-v4-load-https-images
   }
 
   // Disable manifest parsing to avoid adding similar modules twice.
@@ -78,12 +80,7 @@ public class SvgModule extends AppGlideModule {
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager)trustAllCerts[0]);
-        builder.hostnameVerifier(new HostnameVerifier() {
-          @Override
-          public boolean verify(String hostname, SSLSession session) {
-            return true;
-          }
-        });
+        builder.hostnameVerifier((hostname, session) -> true);
 
         OkHttpClient okHttpClient = builder.build();
         return okHttpClient;

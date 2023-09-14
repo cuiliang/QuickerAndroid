@@ -20,7 +20,7 @@ import android.os.PowerManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.speech.RecognizerIntent;
-import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -31,9 +31,12 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
-import com.google.android.gms.common.api.CommonStatusCodes;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -42,6 +45,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
+import cuiliang.quicker.client.ClientConfig;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.client.MessageCache;
@@ -52,14 +56,20 @@ import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
 import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
+import cuiliang.quicker.network.websocket.MessageType;
+import cuiliang.quicker.network.websocket.MsgRequestData;
+import cuiliang.quicker.network.websocket.WebSocketClient;
+import cuiliang.quicker.network.websocket.WebSocketNetListener;
+import cuiliang.quicker.svg.SvgSoftwareLayerSetter;
+import cuiliang.quicker.ui.taskManager.TaskConfig;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
 import cuiliang.quicker.util.ShareDataToPCManager;
 import cuiliang.quicker.util.ShareDialog;
+import cuiliang.quicker.util.SystemUtils;
 import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
-import cuiliang.quicker.svg.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
@@ -99,18 +109,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        Log.d(TAG, "onCreate");
-
         super.onCreate(savedInstanceState);
+        //检查程序中是否缓存了网络配置，如果有，跳过配置步骤直接连接服务器
+        if (!ClientConfig.getInstance().hasCache()) {
+            goConfigActivity(true);
+            //在onCreate执行finish()后，后续其他声明周期的方法不会被执行
+            finish();
+            return;
+        } else {
+            ClientConfig.getInstance().readConfig();
+        }
 
         //
         // 数据初始化
         //
         clientServiceIntent = new Intent(this, ClientService.class);
-        requestBuilder = GlideApp.with(this)
+        requestBuilder = Glide.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
+        // 给图标增加加载动画
+        AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(this, R.drawable.anim_load);
+        if (anim != null) {
+            anim.start();
+            requestBuilder = requestBuilder.placeholder(anim);
+        }
         //
         // 界面相关操作
         //
@@ -155,11 +177,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "绑定成功调用：onServiceConnected");
                 ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
                 clientService = binder.getService();
-
-                if (!clientService.getClientManager().isConnected()) {
-                    Log.d(TAG, "网络未连接，进入配置界面。。。");
-                    goConfigActivity(true);
-                }
 
                 processPcMessage(clientService.getMessageCache().lastVolumeStateMessage);
                 processPcMessage(clientService.getMessageCache().lastUpdateButtonsMessage);
@@ -396,13 +413,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "onDestroy");
-
-        //
-        // 启动客户端线程
-        stopService(clientServiceIntent);
-
         super.onDestroy();
+        Log.d(TAG, "onDestroy");
     }
 
 
@@ -524,9 +536,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param autoReturn
      */
     private void goConfigActivity(boolean autoReturn) {
-        Intent intent = new Intent(this, ConfigActivity.class);
-        intent.putExtra("autoReturn", autoReturn);
-        startActivity(intent);
+        startActivity(new Intent(this, ConfigActivity.class));
     }
 
 
@@ -535,18 +545,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
-
-
-        if (requestCode == REQ_CODE_SCAN_BRCODE) {
-            if (resultCode == CommonStatusCodes.SUCCESS) {
-                String qrcode = data.getStringExtra("barcode");
-                Log.d(TAG, "扫描结果：" + qrcode);
-
-                clientService.getClientManager().sendTextMsg(TextDataMessage.TYPE_QRCODE, qrcode);
-
-
-            }
-        } else if (requestCode == VOICE_RECOGNITION_REQUEST_CODE) {
+        if (requestCode == VOICE_RECOGNITION_REQUEST_CODE) {
             if (resultCode == RESULT_OK && data != null) {
                 //返回结果是一个list，我们一般取的是第一个最匹配的结果
                 ArrayList<String> text = data
@@ -674,6 +673,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
+        //websocket连接
+        WebSocketClient.Companion.instance().connectRequest((result, m) -> {
+            //WebSocket连接成功的消息，这里的成功指获取到pc发过来的动作列表后的阶段
+            //给PC发送一条连接成功通知
+            WebSocketClient.Companion.instance().newCall(new ConnectedHint());
+            return null;
+        });
 
         if (clientService != null && clientService.getClientManager() != null) {
             clientService.getClientManager().requestReSendState();
@@ -705,6 +711,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (clientService != null) {
             //clientService = null;  //保留引用的值，避免空指针问题
             unbindService(conn);
+        }
+        if (clientServiceIntent != null) {
+            stopService(clientServiceIntent);
         }
     }
 
@@ -770,8 +779,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 
 
-        }
-        else if (originMessage instanceof VolumeStateMessage) {
+        } else if (originMessage instanceof VolumeStateMessage) {
             VolumeStateMessage volumeStateMessage = (VolumeStateMessage) originMessage;
 
             //if (volumeStateMessage != _lastProcessedMessages.lastVolumeStateMessage) {
@@ -780,8 +788,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }else {
 //                Log.d(TAG, "已经处理过这个消息了。");
 //            }
-        }
-        else if (originMessage instanceof CommandMessage) {
+        } else if (originMessage instanceof CommandMessage) {
 
             CommandMessage cmdMsg = (CommandMessage) originMessage;
             Log.d(TAG, "收到启动语音输入消息。" + cmdMsg.Command);
@@ -853,6 +860,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             shareDialog.showShareDialog();
         } else {
             ToastUtils.showShort(this, "接下来的操作需要相关信息");
+        }
+    }
+
+    private class ConnectedHint extends WebSocketNetListener {
+
+        @NonNull
+        @Override
+        public MsgRequestData onRequest(@NonNull MsgRequestData data) {
+            String actionID = TaskConfig.INSTANCE.getACTION_LIST().get("通知");
+            actionID = TextUtils.isEmpty(actionID) ? "" : actionID;
+            int batteryNum = SystemUtils.INSTANCE.getSystemBattery(getApplicationContext());
+            StringBuilder msg = new StringBuilder("当前电量");
+            msg.append(batteryNum);
+            if (75 <= batteryNum) {
+                msg.append(",电量充足");
+            } else if (35 <= batteryNum) {
+                msg.append(",这些电量出门没安全感");
+            } else {
+                msg.append(",快没电了！");
+            }
+            data.setData(
+                    MessageType.REQUEST_COMMAND.getValue(),
+                    "action",
+                    msg.toString(),
+                    actionID,
+                    "",
+                    false
+            );
+            return data;
         }
     }
 }

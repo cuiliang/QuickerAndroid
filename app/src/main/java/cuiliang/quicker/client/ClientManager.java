@@ -83,24 +83,13 @@ public class ClientManager {
      * 建立连接
      * @param retry
      */
-    public void connect(final int retry) {
-        connect(retry, null);
-    }
-
     public void connect(final int retry, final ConnectServiceCallback callback) {
-        this.shutdown();
-        _connectThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                doConnect(retry);
-            }
-        });
-
+        if (!ClientConfig.getInstance().hasCache()) return;
+        //已连接的情况不再重复连接
+        if (_status != ConnectionStatus.Disconnected && _status != ConnectionStatus.LoginFailed)
+            return;
+        _connectThread = new Thread(() -> doConnect(retry, callback));
         _connectThread.start();
-    }
-
-    private void doConnect(int retryCount) {
-        doConnect(retryCount, null);
     }
 
     /**
@@ -128,18 +117,17 @@ public class ClientManager {
 
         //设置 handler 处理业务逻辑
         _connector.setHandler(new MinaClientHandler());
-        InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.mServerHost, ClientConfig.mServerPort);
-        Log.i(TAG,"当前进行连接的IP:"+ClientConfig.mServerHost+";端口："+ClientConfig.mServerPort);
+        InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.getInstance().mServerHost, Integer.parseInt(ClientConfig.getInstance().mServerPort));
+        Log.i(TAG, "当前进行连接的IP:" + ClientConfig.getInstance().mServerHost + ";端口：" + ClientConfig.getInstance().mServerPort);
         //配置服务器地址
         int count = 0;
-        do{
+        do {
 
             try {
 
-                if (count > 0){
+                if (count > 0) {
                     Thread.sleep(2000);
                 }
-
 
 
                 Log.d(TAG, "开始连接服务器...");
@@ -148,12 +136,12 @@ public class ClientManager {
                 ConnectFuture mFuture = _connector.connect(mSocketAddress);
                 mFuture.awaitUninterruptibly();
 
-                if (!mFuture.isConnected()){
+                if (!mFuture.isConnected()) {
                     Throwable e = mFuture.getException();
                     Log.e(TAG, "连接失败" + e.getMessage());
                     if (callback != null) callback.connectCallback(false, null);
                     changeStatus(ConnectionStatus.Disconnected, e.getLocalizedMessage());
-                }else {
+                } else {
                     _session = mFuture.getSession();
 
                     Log.d(TAG, "连接服务器成功...");
@@ -177,8 +165,8 @@ public class ClientManager {
                 e.printStackTrace();
             }
 
-            count ++;
-        }while (count < retryCount);
+            count++;
+        } while (count < retryCount);
 
 
     }
@@ -210,7 +198,7 @@ public class ClientManager {
     public void shutdown() {
         Log.d(TAG, "关闭连接...");
 
-        if (_connectThread != null && _connectThread.isAlive()){
+        if (_connectThread != null && _connectThread.isAlive()) {
             _connectThread.interrupt();
             _connectThread = null;
         }
@@ -236,9 +224,9 @@ public class ClientManager {
         }
     }
 
-    public void sendLoginMsg(){
+    public void sendLoginMsg() {
         DeviceLoginMessage msg = new DeviceLoginMessage();
-        msg.ConnectionCode = ClientConfig.ConnectionCode;
+        msg.ConnectionCode = ClientConfig.getInstance().ConnectionCode;
         msg.Version = BuildConfig.VERSION_NAME;
         msg.DeviceName = Build.MODEL + "(" + Build.MANUFACTURER + " " + Build.PRODUCT + ")";
 
@@ -297,10 +285,11 @@ public class ClientManager {
 
     /**
      * 发送通用的命令消息
+     *
      * @param command
      * @param data
      */
-    public void sendCommandMsg(String command, String data){
+    public void sendCommandMsg(String command, String data) {
         CommandMessage msg = new CommandMessage();
         msg.Command = command;
         msg.Data = data;
@@ -315,7 +304,7 @@ public class ClientManager {
     /**
      * 请求PC重发当前状态，用于切换屏幕后刷新界面
      */
-    public void requestReSendState(){
+    public void requestReSendState() {
         sendCommandMsg(CommandMessage.RESEND_STATE, "");
     }
 
@@ -345,11 +334,12 @@ public class ClientManager {
 
     /**
      * 连接断开
+     *
      * @param event
      */
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(SessionClosedEvent event){
+    public void onEventMainThread(SessionClosedEvent event) {
         this.changeStatus(ConnectionStatus.Disconnected, "已断开");
     }
 
@@ -363,15 +353,14 @@ public class ClientManager {
     public void onMessageEvent(ServerMessageEvent event) {
         MessageBase originMessage = event.serverMessage;
 
-        if (originMessage instanceof LoginStateMessage){
+        if (originMessage instanceof LoginStateMessage) {
 
 
-
-            LoginStateMessage msg = (LoginStateMessage)originMessage;
+            LoginStateMessage msg = (LoginStateMessage) originMessage;
 
             Log.d(TAG, "登录状态：" + msg.IsLoggedIn.toString());
 
-            if (msg.IsLoggedIn){
+            if (msg.IsLoggedIn) {
                 //updateConnectionStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
                 this.changeStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
             } else {

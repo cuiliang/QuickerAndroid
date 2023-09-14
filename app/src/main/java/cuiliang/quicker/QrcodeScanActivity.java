@@ -2,14 +2,13 @@ package cuiliang.quicker;
 
 import android.Manifest;
 import android.content.Intent;
-import android.os.Vibrator;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.CommonStatusCodes;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 
@@ -130,7 +129,6 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
     @Override
     public void onPermissionsDenied(int requestCode, @NonNull List<String> perms) {
         Log.d(TAG, "权限被拒绝!");
-
         finish();
     }
 

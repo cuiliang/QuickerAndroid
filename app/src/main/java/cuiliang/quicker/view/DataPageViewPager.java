@@ -1,18 +1,14 @@
 package cuiliang.quicker.view;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 
-import java.util.prefs.BackingStoreException;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.viewpager.widget.ViewPager;
 
-import cuiliang.quicker.R;
 import cuiliang.quicker.UiButtonItem;
 import cuiliang.quicker.adapter.GridLayoutAdapter;
-import cuiliang.quicker.util.DataPageValues;
 
 /**
  * Created by Void on 2020/3/19 13:16

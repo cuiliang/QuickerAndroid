@@ -1,18 +1,17 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 27
+    compileSdk 33
 
     defaultConfig {
         applicationId "cuiliang.quicker"
         minSdkVersion 23
-        targetSdkVersion 27
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        project.ext.set("archivesBaseName", "quicker_cn" + defaultConfig.versionName + "-" + defaultConfig.versionCode);
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        project.ext.set("archivesBaseName", "quicker_cn" + defaultConfig.versionName + "-" + defaultConfig.versionCode)
     }
     buildTypes {
         release {
@@ -20,43 +19,47 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    buildToolsVersion = '23.0.2'
+    buildToolsVersion = '34.0.0'
     compileOptions {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    packagingOptions {
+        resources.excludes += "DebugProbesKt.bin"
+    }
 }
-repositories {
-    mavenCentral()
-}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'com.android.support:support-v4:27.1.1'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.9.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    implementation 'com.google.code.gson:gson:2.10.1'
     implementation files('libs/slf4j-android-1.6.1-RC1.jar')
     implementation files('libs/mina-core-2.0.18.jar')
-    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+    annotationProcessor 'androidx.annotation:annotation:1.7.0'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'com.caverock:androidsvg:1.2.1'
     // Glide v4 uses this new annotation processor -- see https://bumptech.github.io/glide/doc/generatedapi.html
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
-    implementation 'com.android.support:gridlayout-v7:27.1.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.14.2'
     implementation 'cn.bingoogolapple:bga-qrcode-zbar:1.3.7'
     implementation 'cn.bingoogolapple:bga-qrcode-zxing:1.3.7'
-    implementation 'pub.devrel:easypermissions:1.2.0'
+    implementation 'pub.devrel:easypermissions:3.0.0'
     implementation 'org.greenrobot:eventbus:3.1.1'
-    implementation 'com.google.android.gms:play-services-vision:15.0.2'
     //okhttp
     implementation "com.github.bumptech.glide:okhttp3-integration:4.0.0"
     implementation 'com.squareup.okhttp3:okhttp:3.12.0'
-    implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.11.0'
-    implementation 'com.squareup.okio:okio:2.0.0'
-    //kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.squareup.okhttp3:okhttp-urlconnection:5.0.0-alpha.11'
+    implementation 'com.squareup.okio:okio:3.2.0'
     //dialog
     implementation 'com.kongzue.dialog:dialog:2.5.2'
+    //kotlin协程
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }

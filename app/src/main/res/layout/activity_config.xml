@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="电脑 IP:"
+        android:text="@string/serviceHost"
         app:layout_constraintEnd_toStartOf="@+id/txtIp"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintHorizontal_chainStyle="packed"
@@ -25,6 +25,7 @@
         android:layout_marginStart="8dp"
         android:digits="0123456789."
         android:ems="10"
+        android:hint="192.168.1.1"
         android:inputType="text|number"
         app:layout_constraintBaseline_toBaselineOf="@+id/textView"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,7 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="端口:"
+        android:text="@string/servicePort"
         app:layout_constraintEnd_toEndOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
 
@@ -46,6 +47,7 @@
         android:layout_height="46dp"
         android:layout_marginStart="8dp"
         android:ems="10"
+        android:hint="666"
         android:inputType="number"
         app:layout_constraintBaseline_toBaselineOf="@+id/textView2"
         app:layout_constraintStart_toEndOf="@+id/textView2" />
@@ -57,8 +59,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="连接"
-        app:layout_constraintStart_toStartOf="@+id/txtPort"
-        app:layout_constraintTop_toBottomOf="@+id/txtConnectionCode" />
+        app:layout_constraintStart_toStartOf="@+id/et_websocket_code"
+        app:layout_constraintTop_toBottomOf="@+id/et_websocket_code" />
 
     <ImageButton
         android:id="@+id/btnPc"
@@ -98,6 +100,46 @@
         app:layout_constraintEnd_toEndOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
+    <EditText
+        android:id="@+id/et_websocket_port"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="668"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_websocket_port_txt"
+        app:layout_constraintStart_toEndOf="@+id/tv_websocket_port_txt" />
+
+    <TextView
+        android:id="@+id/tv_websocket_port_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="WebSocket端口:"
+        app:layout_constraintEnd_toEndOf="@+id/textView3"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <EditText
+        android:id="@+id/et_websocket_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="quicker"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_websocket_code_txt"
+        app:layout_constraintStart_toEndOf="@+id/tv_websocket_code_txt" />
+
+    <TextView
+        android:id="@+id/tv_websocket_code_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="WebSocket验证码:"
+        app:layout_constraintEnd_toEndOf="@+id/tv_websocket_port_txt"
+        app:layout_constraintTop_toBottomOf="@+id/tv_websocket_port_txt" />
+
     <TextView
         android:id="@+id/textView4"
         android:layout_width="235dp"
@@ -129,4 +171,4 @@
         android:text="不知道推送验证码是什么？点击获取帮助"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/reSetShareUserData" />
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

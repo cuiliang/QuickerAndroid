@@ -2,8 +2,10 @@ package cuiliang.quicker.svg;
 
 import android.graphics.Picture;
 import android.graphics.drawable.PictureDrawable;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.bumptech.glide.load.Options;
 import com.bumptech.glide.load.engine.Resource;
 import com.bumptech.glide.load.resource.SimpleResource;
@@ -17,7 +19,7 @@ public class SvgDrawableTranscoder implements ResourceTranscoder<SVG, PictureDra
   @Nullable
   @Override
   public Resource<PictureDrawable> transcode(
-      @NonNull Resource<SVG> toTranscode, @NonNull Options options) {
+          @NonNull Resource<SVG> toTranscode, @NonNull Options options) {
     SVG svg = toTranscode.get();
     Picture picture = svg.renderToPicture();
     PictureDrawable drawable = new PictureDrawable(picture);
