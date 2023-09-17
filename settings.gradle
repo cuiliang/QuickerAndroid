@@ -21,3 +21,4 @@ dependencyResolutionManagement {
     }
 }
 include ':app'
+//include ':testapplication'

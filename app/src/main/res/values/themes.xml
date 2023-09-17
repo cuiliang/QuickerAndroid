@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="layout_WH_mw">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="task_edit" parent="layout_WH_mw">
+        <item name="android:layout_marginStart">@dimen/d_20</item>
+        <item name="android:layout_marginTop">@dimen/d_20</item>
+    </style>
+</resources>

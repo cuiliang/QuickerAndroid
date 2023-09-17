@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/d_10"
+    android:background="@drawable/shape_task_item_bg"
+    android:orientation="horizontal"
+    android:padding="@dimen/d_20">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/taskTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:ellipsize="end"
+        android:maxWidth="300dp"
+        android:maxEms="15"
+        android:maxLines="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="这里是任务名字" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/taskSubTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/taskTitle"
+        tools:text="任务描述" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/taskSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:padding="@dimen/d_10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:showText="false" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
