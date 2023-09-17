@@ -2,6 +2,7 @@ package cuiliang.quicker;
 
 import android.app.Application;
 import android.os.Build;
+import android.util.DisplayMetrics;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -10,9 +11,12 @@ import java.lang.reflect.Method;
 import cuiliang.quicker.util.SPUtils;
 
 public class QuickerApplication extends Application {
+    public static DisplayMetrics displayMetrics = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        displayMetrics = getResources().getDisplayMetrics();
         SPUtils.init(this);
 //        closeHideApiDialog();
     }

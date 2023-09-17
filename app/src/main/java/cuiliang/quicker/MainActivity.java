@@ -33,6 +33,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.bumptech.glide.Glide;
@@ -62,6 +63,7 @@ import cuiliang.quicker.network.websocket.WebSocketClient;
 import cuiliang.quicker.network.websocket.WebSocketNetListener;
 import cuiliang.quicker.svg.SvgSoftwareLayerSetter;
 import cuiliang.quicker.ui.taskManager.TaskConfig;
+import cuiliang.quicker.ui.taskManager.TaskListActivity;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
 import cuiliang.quicker.util.ShareDataToPCManager;
@@ -137,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 界面相关操作
         //
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getSupportActionBar().hide();
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // 禁止屏幕关闭
@@ -202,8 +203,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // 进入configActivity，从而连接网络
         //goConfigActivity();
-
-
+        AppCompatImageButton taskManager = findViewById(R.id.task_Manager);
+        taskManager.setOnClickListener(v -> {
+            startActivity(new Intent(this, TaskListActivity.class));
+        });
     }
 
 

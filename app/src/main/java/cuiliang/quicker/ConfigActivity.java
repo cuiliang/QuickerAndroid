@@ -143,9 +143,6 @@ public class ConfigActivity extends AppCompatActivity implements EasyPermissions
                 clientService = null;
             }
         };
-
-        // 隐藏向左的箭头
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     /**

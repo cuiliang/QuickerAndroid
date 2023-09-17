@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.taskEdit.TaskEditActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            style="@style/layout_WH_mw"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:menu="@menu/menu_task_edit"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="创建任务" />
+
+        <EditText
+            android:id="@+id/inputTaskName"
+            style="@style/task_edit"
+            android:layout_margin="@dimen/d_10"
+            android:background="@drawable/shape_task_item_bg"
+            android:hint="@string/input_task_name"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:padding="@dimen/d_20"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/toolbar" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_if"
+            style="@style/task_edit"
+            android:layout_margin="@dimen/d_20"
+            android:text="@string/if_str"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/inputTaskName" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_if_factor_list"
+            style="@style/task_edit"
+            android:background="@drawable/shape_task_item_bg"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_if" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_if_action"
+            style="@style/task_edit"
+            android:layout_margin="@dimen/d_20"
+            android:text="@string/if_action"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rv_if_factor_list" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_if_action_list"
+            style="@style/task_edit"
+            android:background="@drawable/shape_task_item_bg"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_if_action" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

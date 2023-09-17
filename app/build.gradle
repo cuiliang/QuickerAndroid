@@ -30,6 +30,9 @@ android {
     packagingOptions {
         resources.excludes += "DebugProbesKt.bin"
     }
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
