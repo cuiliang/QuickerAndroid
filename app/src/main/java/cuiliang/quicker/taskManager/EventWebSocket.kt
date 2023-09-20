@@ -4,14 +4,16 @@ import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import cuiliang.quicker.R
+import cuiliang.quicker.client.ConnectionStatus
+import cuiliang.quicker.network.websocket.ConnectListener
+import cuiliang.quicker.network.websocket.WebSocketClient
 
 /**
  * Created by Silent on 2023/9/18 16:49
  *
- *
  */
-class EventWebSocket : Event {
-    constructor():super()
+class EventWebSocket : Event, ConnectListener {
+    constructor() : super()
 
     constructor(parcel: Parcel) : super(parcel)
 
@@ -24,7 +26,14 @@ class EventWebSocket : Event {
     }
 
     override fun eventRunnable(): Runnable {
+        WebSocketClient.instance().connectListeners.add(this)
         TODO("Not yet implemented")
+    }
+
+    override fun onStatus(status: ConnectionStatus) {
+        if (status == ConnectionStatus.LoggedIn || status == ConnectionStatus.Connected) {
+
+        }
     }
 
     companion object CREATOR : Parcelable.Creator<EventWebSocket> {
@@ -36,5 +45,6 @@ class EventWebSocket : Event {
             return arrayOfNulls(size)
         }
     }
+
 
 }

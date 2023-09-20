@@ -1,6 +1,5 @@
 package cuiliang.quicker.network.websocket
 
-import androidx.lifecycle.MutableLiveData
 import cuiliang.quicker.client.ClientConfig
 import cuiliang.quicker.client.ConnectionStatus
 import cuiliang.quicker.ui.taskManager.TaskConfig
@@ -27,13 +26,14 @@ import kotlin.random.Random
 class WebSocketClient private constructor() : WebSocketListener() {
     private val okhttp: OkHttpClient by lazy { OkHttpClient() }
     private val executor = ScheduledThreadPoolExecutor(2)
+    //用于管理请求和处理请求结果
     private val listeners = hashMapOf<Int, WebSocketNetListener>()
 
     //一个PC的动作ID，通过这个动作获取可运行动作列表。它是固定的
     private val actionListID = "85b45597-1cb3-4f76-94ca-07c19356884c"
     private var webSocketObj: WebSocket? = null
 
-    val connResult: MutableLiveData<Boolean> by lazy { MutableLiveData<Boolean>() }
+    val connectListeners= arrayListOf<ConnectListener>()
 
     //消息编号
     private var serialNum = -1
@@ -43,6 +43,12 @@ class WebSocketClient private constructor() : WebSocketListener() {
 
     @Volatile
     private var connState: ConnectionStatus = ConnectionStatus.Disconnected
+        set(value) {
+            connectListeners.forEach {
+                it.onStatus(value)
+            }
+            field=value
+        }
     private var isDebug = true
 
     //连接结果回调，一个函数引用
@@ -195,7 +201,6 @@ class WebSocketClient private constructor() : WebSocketListener() {
         override fun onResponse(data: MsgResponseData) {
             TaskConfig.decodeActionMsg(data.data)
             resultCallback(true, "")
-            connResult.postValue(connState == ConnectionStatus.LoggedIn || connState == ConnectionStatus.Connected)
             outputDebugLog(data.toString())
         }
     }
