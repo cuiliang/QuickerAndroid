@@ -44,6 +44,8 @@
             android:id="@+id/rv_if_factor_list"
             style="@style/task_edit"
             android:background="@drawable/shape_task_item_bg"
+            android:paddingTop="@dimen/d_10"
+            android:paddingBottom="@dimen/d_10"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_if" />
@@ -61,6 +63,8 @@
             android:id="@+id/rv_if_action_list"
             style="@style/task_edit"
             android:background="@drawable/shape_task_item_bg"
+            android:paddingTop="@dimen/d_10"
+            android:paddingBottom="@dimen/d_10"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_if_action" />

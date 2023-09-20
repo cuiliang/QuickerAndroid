@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.TaskEventActivity"
+            android:name=".ui.EventOrActionActivity"
             android:exported="true" />
         <activity
             android:name=".ui.taskEdit.TaskEditActivity"

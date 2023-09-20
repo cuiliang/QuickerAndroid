@@ -9,16 +9,19 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import cuiliang.quicker.R
-import cuiliang.quicker.ui.taskManager.EventData
+import cuiliang.quicker.ui.taskManager.TaskData
 import cuiliang.quicker.util.KLog
 
 /**
  * Created by Voidcom on 2023/9/13 16:49
  * TODO
  */
-class TaskListAdapter(private val context: Context, private val callback: ((EventData) -> Unit)) :
+class TaskListAdapter(
+    private val context: Context,
+    private val taskList: List<TaskData>,
+    private val callback: ((TaskData) -> Unit)
+) :
     RecyclerView.Adapter<TaskListAdapter.TaskHolder>() {
-    private val taskList = arrayListOf<EventData>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskHolder {
         return TaskHolder(
@@ -30,12 +33,6 @@ class TaskListAdapter(private val context: Context, private val callback: ((Even
 
     override fun onBindViewHolder(holder: TaskHolder, position: Int) {
         holder.setData(taskList[position])
-    }
-
-    fun addTask(data: EventData) {
-        if (taskList.contains(data)) return
-        taskList.add(data)
-        notifyItemChanged(taskList.size - 1)
     }
 
     inner class TaskHolder(itemView: View) : ViewHolder(itemView) {
@@ -53,9 +50,9 @@ class TaskListAdapter(private val context: Context, private val callback: ((Even
             }
         }
 
-        fun setData(data: EventData) {
+        fun setData(data: TaskData) {
             taskTitle.text = data.name
-            taskSubTitle.text = data.description
+            taskSubTitle.text = data.toDescription()
             taskSwitch.isChecked = data.state
             KLog.d("TaskListAdapter", "isChecked:${taskSwitch.isChecked}; taskState:${data.state}")
             itemView.setOnClickListener {

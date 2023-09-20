@@ -29,6 +29,9 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginTop="@dimen/d_5"
+        android:gravity="start"
+        android:maxEms="17"
+        android:maxLines="2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/taskTitle"
         tools:text="任务描述" />

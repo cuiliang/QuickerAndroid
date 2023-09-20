@@ -1,7 +1,9 @@
 package cuiliang.quicker.ui.taskEdit
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.view.Menu
@@ -15,8 +17,10 @@ import androidx.appcompat.app.AppCompatActivity
 import cuiliang.quicker.R
 import cuiliang.quicker.adapter.TaskDetailsItemAdapter
 import cuiliang.quicker.databinding.ActivityTaskEditBinding
-import cuiliang.quicker.ui.TaskEventActivity
-import cuiliang.quicker.ui.taskManager.EventData
+import cuiliang.quicker.taskManager.BaseTaskData
+import cuiliang.quicker.ui.EventOrActionActivity
+import cuiliang.quicker.ui.taskManager.TaskData
+import cuiliang.quicker.ui.taskManager.TaskEditItemData
 import cuiliang.quicker.util.GsonUtils
 
 class TaskEditActivity : AppCompatActivity() {
@@ -25,7 +29,7 @@ class TaskEditActivity : AppCompatActivity() {
     private lateinit var ifActionAdapter: TaskDetailsItemAdapter
 
     private lateinit var mBinding: ActivityTaskEditBinding
-    private lateinit var taskData: EventData
+    private lateinit var taskData: TaskData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,15 +39,22 @@ class TaskEditActivity : AppCompatActivity() {
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         initData()
-        addEventLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult(),
-            addEventCallback
-        )
-        ifFactoryAdapter = TaskDetailsItemAdapter(this) {
-            addEventLauncher.launch(Intent(this, TaskEventActivity::class.java))
+
+        addEventLauncher = EventOrActionActivity.getLauncher(this, addEventCallback)
+
+        ifFactoryAdapter = TaskDetailsItemAdapter(this, taskData.events) {
+            val array = Array(it.size) { "" }
+            for (i in it.indices) {
+                array[i] = it[i].title
+            }
+            addEventLauncher.launch(EventOrActionActivity.getInstant(this, 0, array))
         }
-        ifActionAdapter = TaskDetailsItemAdapter(this) {
-            addEventLauncher.launch(Intent(this, TaskEventActivity::class.java))
+        ifActionAdapter = TaskDetailsItemAdapter(this, taskData.taskActions) {
+            val array = Array(it.size) { "" }
+            for (i in it.indices) {
+                array[i] = it[i].title
+            }
+            addEventLauncher.launch(EventOrActionActivity.getInstant(this, 1, array))
         }
         mBinding.rvIfFactorList.adapter = ifFactoryAdapter.apply {
             setFooterData("添加条件", "如：当电量低于20%")
@@ -66,9 +77,8 @@ class TaskEditActivity : AppCompatActivity() {
             }
 
             R.id.btn_save -> {
-                //todo save
-
-                finish()
+                taskData.name = mBinding.inputTaskName.text.toString()
+                resultAndFinish(taskData)
                 true
             }
 
@@ -77,21 +87,47 @@ class TaskEditActivity : AppCompatActivity() {
     }
 
     private fun initData() {
-        val d = intent.getStringExtra("data")
-        if (d.isNullOrEmpty()) {
-            mBinding.toolbar.title = "新建任务"
+        val d = intent.getStringExtra(DATA)
+        if (editType == 0) {
+            mBinding.toolbar.setTitle(R.string.createTask_str)
+            taskData = TaskData(true)
             return
         }
-        taskData = GsonUtils.toBean(d, EventData::class.java)
-        mBinding.toolbar.title = "编辑任务"
+        taskData = TaskData.jsonToTaskData(d)
+        mBinding.toolbar.setTitle(R.string.editTask_str)
         mBinding.inputTaskName.text = SpannableStringBuilder.valueOf(taskData.name)
     }
 
-    private val addEventCallback = ActivityResultCallback<ActivityResult> {
-        //todo 添加新的事件
+    private fun resultAndFinish(taskData: TaskData) {
+        setResult(Activity.RESULT_OK, Intent().apply {
+            putExtra(DATA, GsonUtils.toString(taskData))
+            putExtra(EDIT_TYPE, editType)
+        })
+        finish()
+    }
+
+    private val addEventCallback = ActivityResultCallback<ActivityResult> { result ->
+        if (result.resultCode != Activity.RESULT_OK || result.data == null) return@ActivityResultCallback
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            result.data!!.getParcelableExtra(
+                EventOrActionActivity.RESULT_DATA,
+                BaseTaskData::class.java
+            )
+        } else {
+            result.data!!.getParcelableExtra(EventOrActionActivity.RESULT_DATA) as BaseTaskData
+        }
+        val dataType = result.data!!.getIntExtra(EventOrActionActivity.DATA_TYPE, 0)
+        if (dataType == 0)
+            ifFactoryAdapter.addItem(TaskEditItemData(event))
+        else
+            ifActionAdapter.addItem(TaskEditItemData(event))
     }
 
     companion object {
+        private var editType: Int = 0 //0:新建任务 1:编辑任务
+        const val EDIT_TYPE = "EDIT_TYPE"
+        const val DATA = "DATA"
+
         fun getLauncher(
             activity: ComponentActivity,
             callback: ActivityResultCallback<ActivityResult>
@@ -105,9 +141,10 @@ class TaskEditActivity : AppCompatActivity() {
         /**
          * @param data 当data=null时，表示新增任务；否则是编辑任务
          */
-        fun getIntent(context: Context, data: EventData? = null): Intent {
+        fun getIntent(context: Context, data: TaskData? = null): Intent {
+            editType = if (data == null) 0 else 1
             return Intent(context, TaskEditActivity::class.java).apply {
-                if (data != null) putExtra("data", data.toString())
+                if (data != null) putExtra(DATA, data.toString())
             }
         }
     }

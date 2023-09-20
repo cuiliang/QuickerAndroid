@@ -7,14 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import cuiliang.quicker.R
-import cuiliang.quicker.taskEvent.Event
+import cuiliang.quicker.taskManager.BaseTaskData
 
-class TaskEventAdapter(private val context: Context, private val callback: ((String) -> Unit)) :
-    RecyclerView.Adapter<TaskEventAdapter.TaskHolder>() {
-    private val eventList = arrayListOf<Event>()
+class EventOrActionAdapter(
+    private val context: Context,
+    private val callback: ((BaseTaskData) -> Unit)
+) :
+    RecyclerView.Adapter<EventOrActionAdapter.TaskHolder>() {
+    private val eventList = arrayListOf<BaseTaskData>()
+    private var unableAddArray = arrayOf<String>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskHolder {
         return TaskHolder(
@@ -28,8 +33,15 @@ class TaskEventAdapter(private val context: Context, private val callback: ((Str
         holder.setData(eventList[position])
     }
 
+    /**
+     * 设置不可添加列表
+     */
+    fun setUnableAddList(array: Array<String>) {
+        this.unableAddArray = array
+    }
+
     @SuppressLint("NotifyDataSetChanged")
-    fun setEvents(list: List<Event>) {
+    fun setEvents(list: List<BaseTaskData>) {
         eventList.clear()
         eventList.addAll(list)
         notifyDataSetChanged()
@@ -39,13 +51,26 @@ class TaskEventAdapter(private val context: Context, private val callback: ((Str
         private val eventIcon: AppCompatImageView = itemView.findViewById(R.id.ivIcon)
         private val eventTitle: AppCompatTextView = itemView.findViewById(R.id.tvTitle)
 
-        fun setData(data: Event) {
+        fun setData(data: BaseTaskData) {
             eventTitle.text = data.getName()
             Glide.with(context).load(data.getIcon()).into(eventIcon)
+
+            //检查这个item是否已经添加，如果添加了就设置为不可点击
+            for (u in unableAddArray.iterator()) {
+                if (data.getName() == u) {
+                    eventTitle.setTextColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.event_unableClick
+                        )
+                    )
+                    itemView.isEnabled = false
+                    itemView.isClickable = false
+                    return
+                }
+            }
             itemView.setOnClickListener {
-                data.getDialog {
-                    callback("")
-                }.show()
+                data.showDialogAndCallback(context, callback)
             }
         }
     }

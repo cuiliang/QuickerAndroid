@@ -23,9 +23,12 @@ import cuiliang.quicker.util.visible
  * Created by Voidcom on 2023/9/15 18:30
  * TODO
  */
-class TaskDetailsItemAdapter(private val context: Context, private val callback: () -> Unit) :
+class TaskDetailsItemAdapter(
+    private val context: Context,
+    private val items: ArrayList<TaskEditItemData>,
+    private val callback: (List<TaskEditItemData>) -> Unit
+) :
     RecyclerView.Adapter<TaskDetailsItemAdapter.ItemViewHolder>() {
-    private val items = ArrayList<TaskEditItemData>()
     private var footerViewData: TaskEditItemData? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -58,6 +61,11 @@ class TaskDetailsItemAdapter(private val context: Context, private val callback:
         notifyItemChanged(itemCount - 1)
     }
 
+    fun removeItem(i: Int) {
+        items.removeAt(i)
+        notifyItemRemoved(i)
+    }
+
     inner class ItemViewHolder(v: View) : ViewHolder(v), OnClickListener,
         OnLongClickListener {
         private var rootView: RelativeLayout = v.findViewById(R.id.rootView)
@@ -68,7 +76,11 @@ class TaskDetailsItemAdapter(private val context: Context, private val callback:
 
         fun setData(d: TaskEditItemData, type: Int) {
             tvTitle.text = d.title
-            tvSubTitle.text = d.subTitle
+            if (d.subTitle.isEmpty()) {
+                tvSubTitle.gone()
+            } else {
+                tvSubTitle.text = d.subTitle
+            }
             Glide.with(context).load(d.icon).into(ivIcon)
             if (TYPE_INVALID == type) {
                 ivClose.setOnClickListener(this)
@@ -82,12 +94,9 @@ class TaskDetailsItemAdapter(private val context: Context, private val callback:
 
         override fun onClick(v: View?) {
             when (v?.id) {
-                R.id.rootView -> callback.invoke()
-                R.id.ivClose -> {
-
-                }
+                R.id.rootView -> callback(items)
+                R.id.ivClose -> removeItem(layoutPosition)
             }
-            Snackbar.make(v ?: return, "还没做好", Snackbar.LENGTH_LONG).show()
         }
 
         override fun onLongClick(v: View?): Boolean {
