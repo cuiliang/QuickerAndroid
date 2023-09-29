@@ -61,9 +61,14 @@
             android:name=".client.ClientService"
             android:enabled="true"
             android:exported="true" />
+        <service
+            android:name=".service.TaskManagerService"
+            android:enabled="true" />
     </application>
+
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

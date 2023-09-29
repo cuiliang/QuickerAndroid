@@ -12,12 +12,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import cuiliang.quicker.adapter.EventOrActionAdapter
 import cuiliang.quicker.databinding.FragmentMyTaskBinding
-import cuiliang.quicker.taskManager.BaseTaskData
+import cuiliang.quicker.taskManager.BaseEventOrAction
+import cuiliang.quicker.taskManager.JsonAction
+import cuiliang.quicker.taskManager.JsonEvent
+import cuiliang.quicker.taskManager.JsonTask
 import cuiliang.quicker.taskManager.TaskDataFactory
+import cuiliang.quicker.taskManager.TaskEventType
+import cuiliang.quicker.taskManager.action.Action
+import cuiliang.quicker.taskManager.event.Event
 
 /**
- * 条件，或者说事件。比如电量更新事件、系统通知事件、WIFI打开事件、蓝牙关闭事件等等
- * 当事件触发后执行预先设置的操作。如：WebSocket发送一条消息、执行quicker某个动作、执行Android某个任务等
+ * 事件和动作列表
+ * 事件，或者说条件。比如电量更新事件、系统通知事件、WIFI打开事件、蓝牙关闭事件等等
+ * 动作：当满足某个事件时执行的操作，比如电量低于xxx发送提醒消息
+ * @see TaskDataFactory
+ * @see TaskEventType
  */
 class EventOrActionActivity : AppCompatActivity() {
     private lateinit var eventOrActionAdapter: EventOrActionAdapter
@@ -43,10 +52,17 @@ class EventOrActionActivity : AppCompatActivity() {
         mBinding.root.adapter = eventOrActionAdapter
     }
 
-    private fun resultAndFinish(data: BaseTaskData) {
+    private fun resultAndFinish(data: BaseEventOrAction) {
         setResult(Activity.RESULT_OK, Intent().apply {
             putExtra(DATA_TYPE, dataType)
-            putExtra(RESULT_DATA, data)
+            putExtra(
+                RESULT_DATA,
+                if (dataType == 0) {
+                    JsonEvent(data as Event).toString()
+                } else {
+                    JsonAction(data as Action).toString()
+                }
+            )
         })
         finish()
     }

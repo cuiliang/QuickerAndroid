@@ -24,6 +24,7 @@ object FileTools {
             KLog.e(TAG, "保存的内容不能为空！")
             return
         }
+        KLog.d(TAG,"保存任务到文件-name:$name; content:$content")
         val jsonFile = getTaskJsonFile(context, name) ?: return
         var fileWriter: FileWriter? = null
         var writer: PrintWriter? = null
@@ -47,7 +48,6 @@ object FileTools {
     }
 
     fun readJsonFromFile(jsonFile: File): String {
-        KLog.d(TAG, "readJsonFromFile：${jsonFile.path}")
         var fileReader: FileReader? = null
         var str = ""
         try {
@@ -58,6 +58,7 @@ object FileTools {
         } finally {
             fileReader?.close()
         }
+        KLog.d(TAG, "path：${jsonFile.path}; content:$str")
         return str
     }
 

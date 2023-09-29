@@ -9,8 +9,8 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import cuiliang.quicker.R
-import cuiliang.quicker.ui.taskManager.TaskData
-import cuiliang.quicker.util.KLog
+import cuiliang.quicker.taskManager.Task
+import cuiliang.quicker.ui.taskManager.TaskList
 
 /**
  * Created by Voidcom on 2023/9/13 16:49
@@ -18,8 +18,8 @@ import cuiliang.quicker.util.KLog
  */
 class TaskListAdapter(
     private val context: Context,
-    private val taskList: List<TaskData>,
-    private val callback: ((TaskData) -> Unit)
+    private val taskList: TaskList,
+    private val callback: ((Task) -> Unit)
 ) :
     RecyclerView.Adapter<TaskListAdapter.TaskHolder>() {
 
@@ -29,10 +29,10 @@ class TaskListAdapter(
         )
     }
 
-    override fun getItemCount(): Int = taskList.size
+    override fun getItemCount(): Int = taskList.size()
 
     override fun onBindViewHolder(holder: TaskHolder, position: Int) {
-        holder.setData(taskList[position])
+        holder.setData(taskList.get(position))
     }
 
     inner class TaskHolder(itemView: View) : ViewHolder(itemView) {
@@ -42,19 +42,18 @@ class TaskListAdapter(
 
         init {
             taskSwitch.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-
-                } else {
-
-                }
+                taskList.get(taskTitle.text.toString()).updateState(context, isChecked)
             }
         }
 
-        fun setData(data: TaskData) {
+        fun setData(data: Task) {
             taskTitle.text = data.name
             taskSubTitle.text = data.toDescription()
-            taskSwitch.isChecked = data.state
-            KLog.d("TaskListAdapter", "isChecked:${taskSwitch.isChecked}; taskState:${data.state}")
+            taskSwitch.isChecked = data.getIsEnable()
+//            KLog.d(
+//                "TaskListAdapter",
+//                "isChecked:${taskSwitch.isChecked}; taskState:${data.getIsEnable()}"
+//            )
             itemView.setOnClickListener {
                 //任务Item点击事件
                 callback.invoke(data)

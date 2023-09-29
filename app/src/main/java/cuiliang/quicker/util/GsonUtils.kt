@@ -21,7 +21,7 @@ import java.util.ArrayList
 object GsonUtils {
     private const val TAG = "GsonUtils"
     private val gson: Gson by lazy {
-        GsonBuilder().serializeNulls().create()
+        GsonBuilder().create()
     }
 
     /**

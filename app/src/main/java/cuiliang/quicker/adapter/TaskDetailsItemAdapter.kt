@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import cuiliang.quicker.R
-import cuiliang.quicker.ui.taskManager.TaskEditItemData
+import cuiliang.quicker.taskManager.BaseEventOrAction
 import cuiliang.quicker.util.KLog
 import cuiliang.quicker.util.gone
 import cuiliang.quicker.util.visible
@@ -23,13 +23,12 @@ import cuiliang.quicker.util.visible
  * Created by Voidcom on 2023/9/15 18:30
  * TODO
  */
-class TaskDetailsItemAdapter(
+class TaskDetailsItemAdapter<T:BaseEventOrAction>(
     private val context: Context,
-    private val items: ArrayList<TaskEditItemData>,
-    private val callback: (List<TaskEditItemData>) -> Unit
-) :
-    RecyclerView.Adapter<TaskDetailsItemAdapter.ItemViewHolder>() {
-    private var footerViewData: TaskEditItemData? = null
+    private val items: ArrayList<T>,
+    private val callback: (List<T>) -> Unit
+) : RecyclerView.Adapter<TaskDetailsItemAdapter<T>.ItemViewHolder>() {
+    private var footerViewData: T? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
         return ItemViewHolder(
@@ -51,13 +50,19 @@ class TaskDetailsItemAdapter(
         }
     }
 
-    fun addItem(data: TaskEditItemData) {
+    fun addItem(data: T) {
         items.add(data)
         notifyItemChanged(items.size - 1)
     }
 
-    fun setFooterData(title: String, subTitle: String) {
-        this.footerViewData = TaskEditItemData(R.drawable.ic_add, title, subTitle)
+    fun addItems(array: List<T>) {
+        items.clear()
+        items.addAll(array)
+        notifyItemRangeChanged(0, itemCount)
+    }
+
+    fun setFooterData(data: T) {
+        this.footerViewData = data
         notifyItemChanged(itemCount - 1)
     }
 
@@ -74,14 +79,14 @@ class TaskDetailsItemAdapter(
         private var tvTitle: AppCompatTextView = v.findViewById(R.id.tvTitle)
         private var tvSubTitle: AppCompatTextView = v.findViewById(R.id.tvSubTitle)
 
-        fun setData(d: TaskEditItemData, type: Int) {
-            tvTitle.text = d.title
-            if (d.subTitle.isEmpty()) {
+        fun setData(d: T, type: Int) {
+            tvTitle.text = d.getName()
+            if (d.resultStr().isEmpty()) {
                 tvSubTitle.gone()
             } else {
-                tvSubTitle.text = d.subTitle
+                tvSubTitle.text = d.resultStr()
             }
-            Glide.with(context).load(d.icon).into(ivIcon)
+            Glide.with(context).load(d.getIcon()).into(ivIcon)
             if (TYPE_INVALID == type) {
                 ivClose.setOnClickListener(this)
                 ivClose.visible()

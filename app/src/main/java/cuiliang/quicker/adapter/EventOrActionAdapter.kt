@@ -11,14 +11,14 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import cuiliang.quicker.R
-import cuiliang.quicker.taskManager.BaseTaskData
+import cuiliang.quicker.taskManager.BaseEventOrAction
 
 class EventOrActionAdapter(
     private val context: Context,
-    private val callback: ((BaseTaskData) -> Unit)
+    private val callback: ((BaseEventOrAction) -> Unit)
 ) :
     RecyclerView.Adapter<EventOrActionAdapter.TaskHolder>() {
-    private val eventList = arrayListOf<BaseTaskData>()
+    private val eventList = arrayListOf<BaseEventOrAction>()
     private var unableAddArray = arrayOf<String>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskHolder {
@@ -41,7 +41,7 @@ class EventOrActionAdapter(
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setEvents(list: List<BaseTaskData>) {
+    fun setEvents(list: List<BaseEventOrAction>) {
         eventList.clear()
         eventList.addAll(list)
         notifyDataSetChanged()
@@ -51,7 +51,7 @@ class EventOrActionAdapter(
         private val eventIcon: AppCompatImageView = itemView.findViewById(R.id.ivIcon)
         private val eventTitle: AppCompatTextView = itemView.findViewById(R.id.tvTitle)
 
-        fun setData(data: BaseTaskData) {
+        fun setData(data: BaseEventOrAction) {
             eventTitle.text = data.getName()
             Glide.with(context).load(data.getIcon()).into(eventIcon)
 

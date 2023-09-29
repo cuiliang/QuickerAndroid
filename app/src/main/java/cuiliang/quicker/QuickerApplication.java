@@ -1,13 +1,11 @@
 package cuiliang.quicker;
 
 import android.app.Application;
-import android.os.Build;
+import android.content.Intent;
 import android.util.DisplayMetrics;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
+import cuiliang.quicker.client.ClientService;
+import cuiliang.quicker.service.TaskManagerService;
 import cuiliang.quicker.util.SPUtils;
 
 public class QuickerApplication extends Application {
@@ -18,6 +16,9 @@ public class QuickerApplication extends Application {
         super.onCreate();
         displayMetrics = getResources().getDisplayMetrics();
         SPUtils.init(this);
+        startService(new Intent(this, ClientService.class));
+        startService(new Intent(this, TaskManagerService.class));
+
 //        closeHideApiDialog();
     }
 

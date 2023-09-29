@@ -1,10 +1,13 @@
 package cuiliang.quicker.ui.taskEdit
 
 import android.app.Activity
+import android.app.Service
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
+import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.text.SpannableStringBuilder
 import android.view.Menu
 import android.view.MenuItem
@@ -17,19 +20,24 @@ import androidx.appcompat.app.AppCompatActivity
 import cuiliang.quicker.R
 import cuiliang.quicker.adapter.TaskDetailsItemAdapter
 import cuiliang.quicker.databinding.ActivityTaskEditBinding
-import cuiliang.quicker.taskManager.BaseTaskData
+import cuiliang.quicker.service.TaskManagerService
+import cuiliang.quicker.taskManager.JsonAction
+import cuiliang.quicker.taskManager.JsonEvent
+import cuiliang.quicker.taskManager.Task
+import cuiliang.quicker.taskManager.action.Action
+import cuiliang.quicker.taskManager.action.ActionAdd
+import cuiliang.quicker.taskManager.event.Event
+import cuiliang.quicker.taskManager.event.EventAdd
 import cuiliang.quicker.ui.EventOrActionActivity
-import cuiliang.quicker.ui.taskManager.TaskData
-import cuiliang.quicker.ui.taskManager.TaskEditItemData
-import cuiliang.quicker.util.GsonUtils
 
-class TaskEditActivity : AppCompatActivity() {
+class TaskEditActivity : AppCompatActivity(), ServiceConnection {
     private lateinit var addEventLauncher: ActivityResultLauncher<Intent>
-    private lateinit var ifFactoryAdapter: TaskDetailsItemAdapter
-    private lateinit var ifActionAdapter: TaskDetailsItemAdapter
+    private lateinit var ifFactoryAdapter: TaskDetailsItemAdapter<Event>
+    private lateinit var ifActionAdapter: TaskDetailsItemAdapter<Action>
 
     private lateinit var mBinding: ActivityTaskEditBinding
-    private lateinit var taskData: TaskData
+    private lateinit var task: Task
+    private var mBinder: TaskManagerService.TaskManagerBinder? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,26 +50,41 @@ class TaskEditActivity : AppCompatActivity() {
 
         addEventLauncher = EventOrActionActivity.getLauncher(this, addEventCallback)
 
-        ifFactoryAdapter = TaskDetailsItemAdapter(this, taskData.events) {
+        ifFactoryAdapter = TaskDetailsItemAdapter(this, task.events) {
             val array = Array(it.size) { "" }
             for (i in it.indices) {
-                array[i] = it[i].title
+                array[i] = it[i].getName()
             }
             addEventLauncher.launch(EventOrActionActivity.getInstant(this, 0, array))
         }
-        ifActionAdapter = TaskDetailsItemAdapter(this, taskData.taskActions) {
+        ifActionAdapter = TaskDetailsItemAdapter(this, task.taskActions) {
             val array = Array(it.size) { "" }
             for (i in it.indices) {
-                array[i] = it[i].title
+                array[i] = it[i].getName()
             }
             addEventLauncher.launch(EventOrActionActivity.getInstant(this, 1, array))
         }
+
         mBinding.rvIfFactorList.adapter = ifFactoryAdapter.apply {
-            setFooterData("添加条件", "如：当电量低于20%")
+            setFooterData(EventAdd())
         }
         mBinding.rvIfActionList.adapter = ifActionAdapter.apply {
-            setFooterData("添加结果", "例如：发送充电提示通知")
+            setFooterData(ActionAdd())
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindService(
+            Intent(applicationContext, TaskManagerService::class.java),
+            this,
+            Service.BIND_AUTO_CREATE
+        )
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unbindService(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -77,8 +100,8 @@ class TaskEditActivity : AppCompatActivity() {
             }
 
             R.id.btn_save -> {
-                taskData.name = mBinding.inputTaskName.text.toString()
-                resultAndFinish(taskData)
+                task.name = mBinding.inputTaskName.text.toString()
+                resultAndFinish(task)
                 true
             }
 
@@ -86,21 +109,32 @@ class TaskEditActivity : AppCompatActivity() {
         }
     }
 
-    private fun initData() {
-        val d = intent.getStringExtra(DATA)
-        if (editType == 0) {
-            mBinding.toolbar.setTitle(R.string.createTask_str)
-            taskData = TaskData(true)
-            return
-        }
-        taskData = TaskData.jsonToTaskData(d)
-        mBinding.toolbar.setTitle(R.string.editTask_str)
-        mBinding.inputTaskName.text = SpannableStringBuilder.valueOf(taskData.name)
+    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+        if (service == null) return
+        mBinder = service as TaskManagerService.TaskManagerBinder
     }
 
-    private fun resultAndFinish(taskData: TaskData) {
+    override fun onServiceDisconnected(name: ComponentName?) {
+        mBinder = null
+    }
+
+    private fun initData() {
+        if (editType == 0) {
+            mBinding.toolbar.setTitle(R.string.createTask_str)
+            task = Task(true)
+            return
+        }
+        val d = intent.getStringExtra(TASK_NAME)
+        task = mBinder?.getTaskList()?.get(d) ?: Task(true)
+        mBinding.toolbar.setTitle(R.string.editTask_str)
+        mBinding.inputTaskName.text = SpannableStringBuilder.valueOf(task.name)
+    }
+
+    private fun resultAndFinish(task: Task) {
+        if (task.name.isEmpty() || task.events.isEmpty() || task.taskActions.isEmpty()) return
+        mBinder?.getTaskList()?.put(task.name, task)
         setResult(Activity.RESULT_OK, Intent().apply {
-            putExtra(DATA, GsonUtils.toString(taskData))
+            putExtra(TASK_NAME, task.name)
             putExtra(EDIT_TYPE, editType)
         })
         finish()
@@ -108,25 +142,19 @@ class TaskEditActivity : AppCompatActivity() {
 
     private val addEventCallback = ActivityResultCallback<ActivityResult> { result ->
         if (result.resultCode != Activity.RESULT_OK || result.data == null) return@ActivityResultCallback
-        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            result.data!!.getParcelableExtra(
-                EventOrActionActivity.RESULT_DATA,
-                BaseTaskData::class.java
-            )
-        } else {
-            result.data!!.getParcelableExtra(EventOrActionActivity.RESULT_DATA) as BaseTaskData
-        }
         val dataType = result.data!!.getIntExtra(EventOrActionActivity.DATA_TYPE, 0)
-        if (dataType == 0)
-            ifFactoryAdapter.addItem(TaskEditItemData(event))
-        else
-            ifActionAdapter.addItem(TaskEditItemData(event))
+        val type = result.data!!.getStringExtra(EventOrActionActivity.RESULT_DATA)
+        if (dataType == 0) {
+            ifFactoryAdapter.addItem(JsonEvent.jsonToEvent(type).toEvent())
+        } else {
+            ifActionAdapter.addItem(JsonAction.jsonToAction(type).toAction())
+        }
     }
 
     companion object {
         private var editType: Int = 0 //0:新建任务 1:编辑任务
         const val EDIT_TYPE = "EDIT_TYPE"
-        const val DATA = "DATA"
+        const val TASK_NAME = "TASK_NAME"
 
         fun getLauncher(
             activity: ComponentActivity,
@@ -139,12 +167,12 @@ class TaskEditActivity : AppCompatActivity() {
         }
 
         /**
-         * @param data 当data=null时，表示新增任务；否则是编辑任务
+         * @param taskName 当taskName=null时，表示新增任务；否则是编辑任务
          */
-        fun getIntent(context: Context, data: TaskData? = null): Intent {
-            editType = if (data == null) 0 else 1
+        fun getIntent(context: Context, taskName: String? = null): Intent {
+            editType = if (taskName.isNullOrEmpty()) 0 else 1
             return Intent(context, TaskEditActivity::class.java).apply {
-                if (data != null) putExtra(DATA, data.toString())
+                putExtra(TASK_NAME, taskName)
             }
         }
     }
