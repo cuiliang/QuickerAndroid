@@ -1,93 +1,44 @@
 <resources>
     <string name="app_name">Quicker</string>
-    <string name="title_activity_settings">Settings</string>
-
-    <!-- Strings related to Settings -->
-
-    <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
-
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
-    </string>
-
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
-
-    <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
-
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value" />
-
-    <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
-
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
-
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="pick_image_intent_text">选择照片</string>
 
     <string name="userName">用户名:</string>
+
     <string name="inputUserNameHint">请输入用户名</string>
     <string name="pushCode">推送验证码:</string>
-    <string name="inputPushCodeHint">请输入推送验证码</string>
-    <string name="accept">确定</string>
 
+    <string name="inputPushCodeHint">请输入推送验证码</string>
+
+    <string name="btnCancel">取消</string>
+    <string name="btnAccept">确定</string>
     <string name="shareInputTitle">接下来的操作需要提供必要信息</string>
     <string name="shareInputHint">注：仅第一次需要输入，后续可以直接分享。如果需要修改，请前往设置修改。\n \n</string>
+
     <string name="inputUserName">请输入用户名。即登陆账号。</string>
     <string name="inputPushCode">请输入推送验证码。\n 不知道推送验证码是什么？请点击右下角设置，点击设置页面底部文字</string>
     <string name="serviceHost">电脑 IP:</string>
     <string name="servicePort">端口:</string>
+    <string name="title_activity_tmp">TmpActivity</string>
+
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="collect_action_str">常用动作</string>
+    <string name="my_task_str">我的任务</string>
+    <string name="addNewTask_str">添加任务</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="task_edit_accept">接受</string>
+    <string name="input_task_name">请输入任务名称</string>
+
+    <string name="if_str">如果</string>
+    <string name="if_action">就执行</string>
+    <string name="editTask_str">编辑任务</string>
+    <string name="createTask_str">新建任务</string>
+    <string-array name="dialog_battery_status_list">
+        <item>电量低于50%</item>
+        <item>电量低于30%</item>
+        <item>电量低于20%</item>
+    </string-array>
+
 </resources>

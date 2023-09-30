@@ -64,5 +64,5 @@
         android:id="@+id/acceptBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/accept" />
+        android:text="@string/btnAccept" />
 </LinearLayout>

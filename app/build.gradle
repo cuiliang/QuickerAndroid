@@ -8,8 +8,8 @@ android {
         applicationId "cuiliang.quicker"
         minSdkVersion 23
         targetSdkVersion 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 102
+        versionName "1.0.2"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         project.ext.set("archivesBaseName", "quicker_cn" + defaultConfig.versionName + "-" + defaultConfig.versionCode)
     }
@@ -29,6 +29,9 @@ android {
     }
     packagingOptions {
         resources.excludes += "DebugProbesKt.bin"
+    }
+    buildFeatures {
+        viewBinding true
     }
 }
 

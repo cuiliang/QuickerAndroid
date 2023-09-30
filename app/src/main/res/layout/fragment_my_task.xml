@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/taskList_rv"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginStart="@dimen/d_10"
+    android:layout_marginEnd="@dimen/d_10"
+    android:layout_gravity="start|top"
+    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
