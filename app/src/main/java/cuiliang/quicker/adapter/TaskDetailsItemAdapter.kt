@@ -23,11 +23,11 @@ import cuiliang.quicker.util.visible
  * Created by Voidcom on 2023/9/15 18:30
  * TODO
  */
-class TaskDetailsItemAdapter<T:BaseEventOrAction>(
+class TaskDetailsItemAdapter<T : BaseEventOrAction>(
     private val context: Context,
-    private val items: ArrayList<T>,
-    private val callback: (List<T>) -> Unit
 ) : RecyclerView.Adapter<TaskDetailsItemAdapter<T>.ItemViewHolder>() {
+    private val items: ArrayList<T> = arrayListOf()
+    private var callback: ((List<T>) -> Unit)? = null
     private var footerViewData: T? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -61,14 +61,18 @@ class TaskDetailsItemAdapter<T:BaseEventOrAction>(
         notifyItemRangeChanged(0, itemCount)
     }
 
+    fun removeItem(i: Int) {
+        items.removeAt(i)
+        notifyItemRemoved(i)
+    }
+
     fun setFooterData(data: T) {
         this.footerViewData = data
         notifyItemChanged(itemCount - 1)
     }
 
-    fun removeItem(i: Int) {
-        items.removeAt(i)
-        notifyItemRemoved(i)
+    fun setCallback(c: (List<T>) -> Unit) {
+        this.callback=c
     }
 
     inner class ItemViewHolder(v: View) : ViewHolder(v), OnClickListener,
@@ -99,7 +103,7 @@ class TaskDetailsItemAdapter<T:BaseEventOrAction>(
 
         override fun onClick(v: View?) {
             when (v?.id) {
-                R.id.rootView -> callback(items)
+                R.id.rootView -> callback?.invoke(items)
                 R.id.ivClose -> removeItem(layoutPosition)
             }
         }

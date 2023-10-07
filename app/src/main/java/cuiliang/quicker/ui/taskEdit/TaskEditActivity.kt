@@ -21,6 +21,7 @@ import cuiliang.quicker.R
 import cuiliang.quicker.adapter.TaskDetailsItemAdapter
 import cuiliang.quicker.databinding.ActivityTaskEditBinding
 import cuiliang.quicker.service.TaskManagerService
+import cuiliang.quicker.taskManager.BaseEventOrAction
 import cuiliang.quicker.taskManager.JsonAction
 import cuiliang.quicker.taskManager.JsonEvent
 import cuiliang.quicker.taskManager.Task
@@ -31,7 +32,7 @@ import cuiliang.quicker.taskManager.event.EventAdd
 import cuiliang.quicker.ui.EventOrActionActivity
 
 class TaskEditActivity : AppCompatActivity(), ServiceConnection {
-    private lateinit var addEventLauncher: ActivityResultLauncher<Intent>
+    private lateinit var launcher: ActivityResultLauncher<Intent>
     private lateinit var ifFactoryAdapter: TaskDetailsItemAdapter<Event>
     private lateinit var ifActionAdapter: TaskDetailsItemAdapter<Action>
 
@@ -46,31 +47,18 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
         setSupportActionBar(mBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        initData()
 
-        addEventLauncher = EventOrActionActivity.getLauncher(this, addEventCallback)
+        launcher = EventOrActionActivity.getLauncher(this, addEventCallback)
 
-        ifFactoryAdapter = TaskDetailsItemAdapter(this, task.events) {
-            val array = Array(it.size) { "" }
-            for (i in it.indices) {
-                array[i] = it[i].getName()
-            }
-            addEventLauncher.launch(EventOrActionActivity.getInstant(this, 0, array))
-        }
-        ifActionAdapter = TaskDetailsItemAdapter(this, task.taskActions) {
-            val array = Array(it.size) { "" }
-            for (i in it.indices) {
-                array[i] = it[i].getName()
-            }
-            addEventLauncher.launch(EventOrActionActivity.getInstant(this, 1, array))
-        }
+        ifFactoryAdapter = TaskDetailsItemAdapter(this)
+        ifFactoryAdapter.setCallback(adapterClickCallback(0))
+        ifFactoryAdapter.setFooterData(EventAdd())
+        mBinding.rvIfFactorList.adapter = ifFactoryAdapter
 
-        mBinding.rvIfFactorList.adapter = ifFactoryAdapter.apply {
-            setFooterData(EventAdd())
-        }
-        mBinding.rvIfActionList.adapter = ifActionAdapter.apply {
-            setFooterData(ActionAdd())
-        }
+        ifActionAdapter = TaskDetailsItemAdapter(this)
+        ifActionAdapter.setCallback(adapterClickCallback(1))
+        ifActionAdapter.setFooterData(ActionAdd())
+        mBinding.rvIfActionList.adapter = ifActionAdapter
     }
 
     override fun onStart() {
@@ -112,6 +100,7 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
         if (service == null) return
         mBinder = service as TaskManagerService.TaskManagerBinder
+        initData()
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
@@ -128,6 +117,8 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
         task = mBinder?.getTaskList()?.get(d) ?: Task(true)
         mBinding.toolbar.setTitle(R.string.editTask_str)
         mBinding.inputTaskName.text = SpannableStringBuilder.valueOf(task.name)
+        ifFactoryAdapter.addItems(task.events)
+        ifActionAdapter.addItems(task.taskActions)
     }
 
     private fun resultAndFinish(task: Task) {
@@ -148,6 +139,16 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
             ifFactoryAdapter.addItem(JsonEvent.jsonToEvent(type).toEvent())
         } else {
             ifActionAdapter.addItem(JsonAction.jsonToAction(type).toAction())
+        }
+    }
+
+    private fun <T : BaseEventOrAction> adapterClickCallback(type: Int): (List<T>) -> Unit {
+        return {
+            val array = Array(it.size) { "" }
+            for (i in it.indices) {
+                array[i] = it[i].getName()
+            }
+            launcher.launch(EventOrActionActivity.getInstant(this, type, array))
         }
     }
 
