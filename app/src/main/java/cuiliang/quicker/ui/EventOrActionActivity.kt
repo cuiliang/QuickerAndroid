@@ -3,19 +3,18 @@ package cuiliang.quicker.ui
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.cuiliang.quicker.ui.BaseVBActivity
+import com.cuiliang.quicker.ui.EmptyViewModel
 import cuiliang.quicker.adapter.EventOrActionAdapter
 import cuiliang.quicker.databinding.FragmentMyTaskBinding
 import cuiliang.quicker.taskManager.BaseEventOrAction
 import cuiliang.quicker.taskManager.JsonAction
 import cuiliang.quicker.taskManager.JsonEvent
-import cuiliang.quicker.taskManager.JsonTask
 import cuiliang.quicker.taskManager.TaskDataFactory
 import cuiliang.quicker.taskManager.TaskEventType
 import cuiliang.quicker.taskManager.action.Action
@@ -28,15 +27,13 @@ import cuiliang.quicker.taskManager.event.Event
  * @see TaskDataFactory
  * @see TaskEventType
  */
-class EventOrActionActivity : AppCompatActivity() {
+class EventOrActionActivity : BaseVBActivity<FragmentMyTaskBinding,EmptyViewModel>() {
     private lateinit var eventOrActionAdapter: EventOrActionAdapter
-    private lateinit var mBinding: FragmentMyTaskBinding
     private var dataType = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mBinding = FragmentMyTaskBinding.inflate(layoutInflater)
-        setContentView(mBinding.root)
+    override val mViewModel: EmptyViewModel by lazy { EmptyViewModel() }
+
+    override fun onInit() {
         eventOrActionAdapter = EventOrActionAdapter(this) {
             resultAndFinish(it)
         }

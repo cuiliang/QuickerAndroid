@@ -2,56 +2,54 @@ package cuiliang.quicker;
 
 import android.Manifest;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+
+import com.cuiliang.quicker.ui.BaseVBActivity;
+import com.cuiliang.quicker.ui.EmptyViewModel;
 
 import java.util.List;
 
 import cn.bingoogolapple.qrcode.core.QRCodeView;
-import cn.bingoogolapple.qrcode.zbar.ZBarView;
+import cuiliang.quicker.databinding.ActivityQrcodeScanBinding;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
 // https://github.com/bingoogolapple/BGAQRCode-Android
-public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.Delegate, EasyPermissions.PermissionCallbacks {
+public class QrcodeScanActivity extends BaseVBActivity<ActivityQrcodeScanBinding, EmptyViewModel> implements QRCodeView.Delegate, EasyPermissions.PermissionCallbacks {
     private static final String TAG = QrcodeScanActivity.class.getSimpleName();
-    private static final int REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY = 666;
     private static final int REQUEST_CODE_QRCODE_PERMISSIONS = 1;
 
-    private QRCodeView mQRCodeView;
-
-
+    @NonNull
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_qrcode_scan);
-
-        mQRCodeView = (ZBarView) findViewById(R.id.zbarview);
-        mQRCodeView.setDelegate(this);
+    protected EmptyViewModel getMViewModel() {
+        return new EmptyViewModel();
     }
 
+    @Override
+    public void onInit() {
+        getMBinding().zbarview.setDelegate(this);
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
         requestCodeQRCodePermissions();
-        mQRCodeView.startSpot();
+        getMBinding().zbarview.startSpot();
     }
 
     @Override
     protected void onStop() {
-        mQRCodeView.stopCamera();
+        getMBinding().zbarview.stopCamera();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
-        mQRCodeView.onDestroy();
+        getMBinding().zbarview.onDestroy();
         super.onDestroy();
     }
 
@@ -67,7 +65,7 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
         Log.i(TAG, "result:" + result);
         Toast.makeText(this, result, Toast.LENGTH_SHORT).show();
         vibrate();
-        // mQRCodeView.startSpot();
+        // getMBinding().zbarview.startSpot();
 
         Intent intent = new Intent();// 重新声明一个意图。
         intent.putExtra("barcode", result); // 将three回传到意图中。
@@ -85,20 +83,6 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
         Log.e(TAG, "打开相机出错");
     }
 
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        mQRCodeView.showScanRect();
-//
-//        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_CHOOSE_QRCODE_FROM_GALLERY) {
-//            final String picturePath = BGAPhotoPickerActivity.getSelectedPhotos(data).get(0);
-//            mQRCodeView.decodeQRCode(picturePath);
-//        }
-//    }
-
-
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -106,8 +90,6 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
         // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
-
-
 
     @AfterPermissionGranted(REQUEST_CODE_QRCODE_PERMISSIONS)
     private void requestCodeQRCodePermissions() {
@@ -133,33 +115,7 @@ public class QrcodeScanActivity extends AppCompatActivity implements QRCodeView.
     }
 
     private void startScan() {
-
-//        作者：Jinwong
-//        链接：https://www.jianshu.com/p/bb9adc33c66f
-//        來源：简书
-//        简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
-//        Camera.Parameters params = camera.getParameters();
-//        if (parameters.getMaxNumFocusAreas() > 0) {
-//            List<Camera.Area> focusAreas = new ArrayList<>();
-//            Rect focusRect = new Rect(-100, -100, 100, 100);
-//            focusAreas.add(new Camera.Area(focusRect, 1000));
-//            parameters.setFocusAreas(focusAreas);
-//        }
-//
-//        if (parameters.getMaxNumMeteringAreas() > 0) {
-//            List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
-//            Rect meteringRect = new Rect(-100, -100, 100, 100);
-//            meteringAreas.add(new Camera.Area(meteringRect, 1000));
-//            parameters.setMeteringAreas(meteringAreas);
-//        }
-
-
-
-        mQRCodeView.startCamera();
-
-
-//        mQRCodeView.startCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
-
-        mQRCodeView.showScanRect();
+        getMBinding().zbarview.startCamera();
+        getMBinding().zbarview.showScanRect();
     }
 }

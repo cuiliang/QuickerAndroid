@@ -6,9 +6,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.os.Bundle
 import android.os.IBinder
-import android.text.SpannableStringBuilder
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.ComponentActivity
@@ -16,58 +14,31 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
+import com.cuiliang.quicker.ui.BaseDBActivity
 import cuiliang.quicker.R
-import cuiliang.quicker.adapter.TaskDetailsItemAdapter
 import cuiliang.quicker.databinding.ActivityTaskEditBinding
 import cuiliang.quicker.service.TaskManagerService
-import cuiliang.quicker.taskManager.BaseEventOrAction
-import cuiliang.quicker.taskManager.JsonAction
-import cuiliang.quicker.taskManager.JsonEvent
 import cuiliang.quicker.taskManager.Task
-import cuiliang.quicker.taskManager.action.Action
-import cuiliang.quicker.taskManager.action.ActionAdd
-import cuiliang.quicker.taskManager.event.Event
-import cuiliang.quicker.taskManager.event.EventAdd
-import cuiliang.quicker.ui.EventOrActionActivity
 
-class TaskEditActivity : AppCompatActivity(), ServiceConnection {
-    private lateinit var launcher: ActivityResultLauncher<Intent>
-    private lateinit var ifFactoryAdapter: TaskDetailsItemAdapter<Event>
-    private lateinit var ifActionAdapter: TaskDetailsItemAdapter<Action>
+class TaskEditActivity : BaseDBActivity<ActivityTaskEditBinding, TaskEditViewModel>(),
+    ServiceConnection {
 
-    private lateinit var mBinding: ActivityTaskEditBinding
-    private lateinit var task: Task
     private var mBinder: TaskManagerService.TaskManagerBinder? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        mBinding = ActivityTaskEditBinding.inflate(layoutInflater)
-        setContentView(mBinding.root)
+    override val mViewModel: TaskEditViewModel by lazy { TaskEditViewModel() }
+
+    override fun getLayoutID(): Int = R.layout.activity_task_edit
+
+    override fun onInit() {
+        mBinding.vm=mViewModel
         setSupportActionBar(mBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        launcher = EventOrActionActivity.getLauncher(this, addEventCallback)
-
-        ifFactoryAdapter = TaskDetailsItemAdapter(this)
-        ifFactoryAdapter.setCallback(adapterClickCallback(0))
-        ifFactoryAdapter.setFooterData(EventAdd())
-        mBinding.rvIfFactorList.adapter = ifFactoryAdapter
-
-        ifActionAdapter = TaskDetailsItemAdapter(this)
-        ifActionAdapter.setCallback(adapterClickCallback(1))
-        ifActionAdapter.setFooterData(ActionAdd())
-        mBinding.rvIfActionList.adapter = ifActionAdapter
     }
 
     override fun onStart() {
         super.onStart()
-        bindService(
-            Intent(applicationContext, TaskManagerService::class.java),
-            this,
-            Service.BIND_AUTO_CREATE
-        )
+        bindService(Intent(this, TaskManagerService::class.java), this, Service.BIND_AUTO_CREATE)
     }
 
     override fun onStop() {
@@ -88,8 +59,7 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
             }
 
             R.id.btn_save -> {
-                task.name = mBinding.inputTaskName.text.toString()
-                resultAndFinish(task)
+                resultAndFinish(mViewModel.model.task)
                 true
             }
 
@@ -109,47 +79,25 @@ class TaskEditActivity : AppCompatActivity(), ServiceConnection {
 
     private fun initData() {
         if (editType == 0) {
-            mBinding.toolbar.setTitle(R.string.createTask_str)
-            task = Task(true)
+            mViewModel.title.value = getString(R.string.createTask_str)
+            mViewModel.model.task = Task(true)
             return
         }
-        val d = intent.getStringExtra(TASK_NAME)
-        task = mBinder?.getTaskList()?.get(d) ?: Task(true)
-        mBinding.toolbar.setTitle(R.string.editTask_str)
-        mBinding.inputTaskName.text = SpannableStringBuilder.valueOf(task.name)
-        ifFactoryAdapter.addItems(task.events)
-        ifActionAdapter.addItems(task.taskActions)
+        val i = intent.getStringExtra(TASK_NAME)
+        mViewModel.model.task = mBinder?.getTaskList()?.get(i) ?: Task(true)
+        mViewModel.title.value = getString(R.string.editTask_str)
+        mViewModel.taskName.value = mViewModel.model.task.name
+        mViewModel.refreshAllData()
     }
 
     private fun resultAndFinish(task: Task) {
-        if (task.name.isEmpty() || task.events.isEmpty() || task.taskActions.isEmpty()) return
+        if (!mViewModel.saveData()) return
         mBinder?.getTaskList()?.put(task.name, task)
         setResult(Activity.RESULT_OK, Intent().apply {
             putExtra(TASK_NAME, task.name)
             putExtra(EDIT_TYPE, editType)
         })
         finish()
-    }
-
-    private val addEventCallback = ActivityResultCallback<ActivityResult> { result ->
-        if (result.resultCode != Activity.RESULT_OK || result.data == null) return@ActivityResultCallback
-        val dataType = result.data!!.getIntExtra(EventOrActionActivity.DATA_TYPE, 0)
-        val type = result.data!!.getStringExtra(EventOrActionActivity.RESULT_DATA)
-        if (dataType == 0) {
-            ifFactoryAdapter.addItem(JsonEvent.jsonToEvent(type).toEvent())
-        } else {
-            ifActionAdapter.addItem(JsonAction.jsonToAction(type).toAction())
-        }
-    }
-
-    private fun <T : BaseEventOrAction> adapterClickCallback(type: Int): (List<T>) -> Unit {
-        return {
-            val array = Array(it.size) { "" }
-            for (i in it.indices) {
-                array[i] = it[i].getName()
-            }
-            launcher.launch(EventOrActionActivity.getInstant(this, type, array))
-        }
     }
 
     companion object {
