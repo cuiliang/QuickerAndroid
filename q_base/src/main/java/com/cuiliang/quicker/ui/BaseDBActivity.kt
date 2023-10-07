@@ -13,7 +13,6 @@ abstract class BaseDBActivity<DB : ViewDataBinding, VM : BaseViewModel> : BaseAc
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(mBinding.root)
         mBinding.lifecycleOwner = this
         mViewModel.vmBinding = mBinding
         onInit()

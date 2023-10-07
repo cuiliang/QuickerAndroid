@@ -5,5 +5,3 @@ package com.cuiliang.quicker.ui
  *
  */
 abstract class BaseModel
-
-class EmptyModel: BaseModel()
