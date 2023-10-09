@@ -12,11 +12,11 @@ import android.content.IntentFilter
  */
 object SystemUtils {
     private const val TAG = "SystemUtils"
-    fun getSystemBattery(context: Context) :Int{
+    fun getSystemBattery(context: Context): Int {
         val batteryInfoIntent = context.applicationContext.registerReceiver(
             null,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        )
+        ) ?: return 0
         val level = batteryInfoIntent.getIntExtra("level", 0)
         val batterySum = batteryInfoIntent.getIntExtra("scale", 100)
         val percentBattery = 100 * level / batterySum

@@ -85,7 +85,7 @@ class MyTaskFragment : Fragment(), ServiceConnection {
 
     private val editTaskCallback = ActivityResultCallback<ActivityResult> { result ->
         if (result.resultCode != Activity.RESULT_OK || result.data == null) return@ActivityResultCallback
-        val name = result.data!!.getStringExtra(TaskEditActivity.TASK_NAME)
+        val name = result.data?.getStringExtra(TaskEditActivity.TASK_NAME) ?: ""
 //        KLog.d("MyTaskFragment", "json:$name")
         mBinder?.getTaskList()?.let {
             it.saveConfig()

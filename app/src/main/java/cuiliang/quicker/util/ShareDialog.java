@@ -53,26 +53,21 @@ public class ShareDialog implements
 
     @Override
     public void onCheckedChanged(RadioGroup group, int checkedId) {
-        switch (checkedId) {
-            case R.id.inputRB:
-                inputHintTv.setVisibility(View.GONE);
-                contentType = 0;
-                break;
-            case R.id.pasteRB:
-                inputHintTv.setVisibility(View.VISIBLE);
-                inputHintTv.setText("注：请确认电脑鼠标的焦点在编辑状态");
-                contentType = 1;
-                break;
-            case R.id.actionRB:
-                inputHintTv.setVisibility(View.VISIBLE);
-                inputHintTv.setText("注：使用动作名时，需保证没有重名的动作");
-                contentType = 2;
-                break;
-            default:
-                inputHintTv.setVisibility(View.GONE);
-                contentType = -1;
-                ToastUtils.showShort(context, "选择分享类型异常！contentType：" + contentType);
-                break;
+        if (checkedId == R.id.inputRB){
+            inputHintTv.setVisibility(View.GONE);
+            contentType = 0;
+        }else if (checkedId==R.id.pasteRB){
+            inputHintTv.setVisibility(View.VISIBLE);
+            inputHintTv.setText("注：请确认电脑鼠标的焦点在编辑状态");
+            contentType = 1;
+        }else if (checkedId==R.id.actionRB){
+            inputHintTv.setVisibility(View.VISIBLE);
+            inputHintTv.setText("注：使用动作名时，需保证没有重名的动作");
+            contentType = 2;
+        }else{
+            inputHintTv.setVisibility(View.GONE);
+            contentType = -1;
+            ToastUtils.showShort(context, "选择分享类型异常！contentType：" + contentType);
         }
     }
 

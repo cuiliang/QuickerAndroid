@@ -31,7 +31,7 @@ class TaskManagerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder {
         intent?.let {
-            KLog.d(TAG, "onBind: " + it.component.className)
+            KLog.d(TAG, "onBind: " + it.component?.className)
         }
         return mBinder
     }

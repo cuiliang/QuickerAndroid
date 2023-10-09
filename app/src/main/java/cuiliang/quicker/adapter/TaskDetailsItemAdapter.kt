@@ -94,7 +94,7 @@ class TaskDetailsItemAdapter<T : BaseEventOrAction>(
             if (TYPE_INVALID == type) {
                 ivClose.setOnClickListener(this)
                 ivClose.visible()
-                rootView.onLongClickListener = this
+                rootView.setOnLongClickListener(this)
             } else {
                 ivClose.gone()
                 rootView.setOnClickListener(this)

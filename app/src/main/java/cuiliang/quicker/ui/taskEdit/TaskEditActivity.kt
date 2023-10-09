@@ -30,7 +30,7 @@ class TaskEditActivity : BaseDBActivity<ActivityTaskEditBinding, TaskEditViewMod
     override fun getLayoutID(): Int = R.layout.activity_task_edit
 
     override fun onInit() {
-        mBinding.vm=mViewModel
+        mBinding.vm = mViewModel
         setSupportActionBar(mBinding.toolbar)
         supportActionBar?.setHomeButtonEnabled(true)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -51,8 +51,8 @@ class TaskEditActivity : BaseDBActivity<ActivityTaskEditBinding, TaskEditViewMod
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
             android.R.id.home -> {
                 finish()
                 true
@@ -83,7 +83,7 @@ class TaskEditActivity : BaseDBActivity<ActivityTaskEditBinding, TaskEditViewMod
             mViewModel.model.task = Task(true)
             return
         }
-        val i = intent.getStringExtra(TASK_NAME)
+        val i = intent.getStringExtra(TASK_NAME) ?: ""
         mViewModel.model.task = mBinder?.getTaskList()?.get(i) ?: Task(true)
         mViewModel.title.value = getString(R.string.editTask_str)
         mViewModel.taskName.value = mViewModel.model.task.name

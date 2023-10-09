@@ -70,27 +70,25 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btnSave -> {
-                //连接按钮被点击后应该设为不可点击，直到连接结果返回取消该状态
-                v.setClickable(false);
-                v.setEnabled(false);
-                getMHandler().postDelayed(() -> {
-                    v.setClickable(true);
-                    v.setEnabled(true);
-                }, 3000);
-                save();
-                if (clientService != null) {
-                    clientService.getClientManager().connect(1, null);
-                }
+        //自 ADT 版本 14 以来，资源 ID 不是库项目中的常量，因此在 switch 语句中使用它们会报错
+        if (v.getId()==R.id.btnSave){
+            //连接按钮被点击后应该设为不可点击，直到连接结果返回取消该状态
+            v.setClickable(false);
+            v.setEnabled(false);
+            getMHandler().postDelayed(() -> {
+                v.setClickable(true);
+                v.setEnabled(true);
+            }, 3000);
+            save();
+            if (clientService != null) {
+                clientService.getClientManager().connect(1, null);
             }
-            case R.id.btnPc -> {
-                String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
-                if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
-                    requestCodeQRCodePermissions();
-                } else {
-                    beginScan();
-                }
+        }else if (v.getId()==R.id.btnPc){
+            String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
+            if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
+                requestCodeQRCodePermissions();
+            } else {
+                beginScan();
             }
         }
     }

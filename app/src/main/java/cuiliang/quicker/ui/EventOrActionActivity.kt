@@ -27,7 +27,7 @@ import cuiliang.quicker.taskManager.event.Event
  * @see TaskDataFactory
  * @see TaskEventType
  */
-class EventOrActionActivity : BaseVBActivity<FragmentMyTaskBinding,EmptyViewModel>() {
+class EventOrActionActivity : BaseVBActivity<FragmentMyTaskBinding, EmptyViewModel>() {
     private lateinit var eventOrActionAdapter: EventOrActionAdapter
     private var dataType = 0
 
@@ -37,8 +37,8 @@ class EventOrActionActivity : BaseVBActivity<FragmentMyTaskBinding,EmptyViewMode
         eventOrActionAdapter = EventOrActionAdapter(this) {
             resultAndFinish(it)
         }
-        if (intent.hasExtra(UNABLE_ADD_LIST)) {
-            eventOrActionAdapter.setUnableAddList(intent.getStringArrayExtra(UNABLE_ADD_LIST))
+        intent.getStringArrayExtra(UNABLE_ADD_LIST)?.let {
+            eventOrActionAdapter.setUnableAddList(it)
         }
         dataType = intent.getIntExtra(DATA_TYPE, 0)
         if (dataType == 0) {

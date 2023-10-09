@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 数据初始化
         //
         clientServiceIntent = new Intent(this, ClientService.class);
+
         requestBuilder = Glide.with(this)
                 .as(PictureDrawable.class)
                 .listener(new SvgSoftwareLayerSetter());
@@ -815,26 +816,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btnVoice:
-                startVoiceInput();
-                break;
-            case R.id.btnPhoto:
-                beginTakePhoto();
-                break;
-            case R.id.btnPc:
-                clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
-                break;
-            case R.id.shareIv://分享
-                shareData();
-                break;
-            case R.id.btnMute:
-                clientService.getClientManager().sendToggleMuteMsg();
-                break;
-            case R.id.btnConfig:
-                goConfigActivity(false);
-                break;
-        }
+        if (v.getId() == R.id.btnVoice)
+            startVoiceInput();
+        else if (v.getId() == R.id.btnPhoto)
+            beginTakePhoto();
+        else if (v.getId() == R.id.btnPc)
+            clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
+        else if (v.getId() == R.id.shareIv)
+            shareData();
+        else if (v.getId() == R.id.btnMute)
+            clientService.getClientManager().sendToggleMuteMsg();
+        else if (v.getId() == R.id.btnConfig)
+            goConfigActivity(false);
     }
 
     /**

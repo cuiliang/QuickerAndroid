@@ -36,11 +36,11 @@ class TaskEditViewModel : BaseViewModel() {
         launcher = EventOrActionActivity.getLauncher(context as TaskEditActivity, addEventCallback)
 
         ifFactoryAdapter = TaskDetailsItemAdapter(context)
-        ifFactoryAdapter.setCallback(adapterClickCallback(context,0))
+        ifFactoryAdapter.setCallback(adapterClickCallback(context, 0))
         ifFactoryAdapter.setFooterData(EventAdd())
 
         ifActionAdapter = TaskDetailsItemAdapter(context)
-        ifActionAdapter.setCallback(adapterClickCallback(context,1))
+        ifActionAdapter.setCallback(adapterClickCallback(context, 1))
         ifActionAdapter.setFooterData(ActionAdd())
         (vmBinding as ActivityTaskEditBinding).run {
             rvIfFactorList.adapter = ifFactoryAdapter
@@ -54,7 +54,7 @@ class TaskEditViewModel : BaseViewModel() {
     }
 
     fun saveData(): Boolean {
-        model.task.name = taskName.value?:""
+        model.task.name = taskName.value ?: ""
         return model.task.name.isNotEmpty() && model.task.events.isNotEmpty() && model.task.taskActions.isNotEmpty()
     }
 
@@ -66,15 +66,19 @@ class TaskEditViewModel : BaseViewModel() {
     private val addEventCallback = ActivityResultCallback<ActivityResult> { result ->
         if (result.resultCode != Activity.RESULT_OK || result.data == null) return@ActivityResultCallback
         val dataType = result.data!!.getIntExtra(EventOrActionActivity.DATA_TYPE, 0)
-        val type = result.data!!.getStringExtra(EventOrActionActivity.RESULT_DATA)
-        if (dataType == 0) {
-            ifFactoryAdapter.addItem(JsonEvent.jsonToEvent(type).toEvent())
-        } else {
-            ifActionAdapter.addItem(JsonAction.jsonToAction(type).toAction())
+        result.data?.getStringExtra(EventOrActionActivity.RESULT_DATA)?.let {
+            if (dataType == 0) {
+                ifFactoryAdapter.addItem(JsonEvent.jsonToEvent(it).toEvent())
+            } else {
+                ifActionAdapter.addItem(JsonAction.jsonToAction(it).toAction())
+            }
         }
     }
 
-    private fun <T : BaseEventOrAction> adapterClickCallback(context: Context,type: Int): (List<T>) -> Unit {
+    private fun <T : BaseEventOrAction> adapterClickCallback(
+        context: Context,
+        type: Int
+    ): (List<T>) -> Unit {
         return {
             val array = Array(it.size) { "" }
             for (i in it.indices) {
