@@ -750,8 +750,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     "\nglobalDataPageCount:" + DataPageValues.globalDataPageCount +
                     "\ncurrentGlobalPageIndex:" + DataPageValues.currentGlobalPageIndex +
                     "\ncontextDataPageCount:" + DataPageValues.contextDataPageCount +
-                    "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex +
-                    "\nButtonIndex:" + serverMsg.Buttons[0].Index);
+                    "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex);
 
             txtProfileName.setText(serverMsg.ProfileName);
             for (UpdateButtonsMessage.ButtonItem btn : serverMsg.Buttons) {

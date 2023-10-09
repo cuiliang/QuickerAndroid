@@ -4,7 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.kongzue.dialog.v2.InputDialog;
+import com.kongzue.dialogx.dialogs.InputDialog;
 
 import cuiliang.quicker.R;
 import cuiliang.quicker.network.NetRequestObj;
@@ -118,21 +118,28 @@ public class ShareDataToPCManager {
             } else {
                 content = context.getString(R.string.inputPushCode);
             }
-            InputDialog.show(context, context.getString(R.string.shareInputTitle), content,
-                    (dialog, inputText) -> {
-                        if (TextUtils.isEmpty(inputText)) {
-                            ToastUtils.showShort(dialog.getContext(), "操作无效，你输入了空内容！");
+            InputDialog.build()
+                    .setTitle(R.string.shareInputTitle)
+                    .setMessage(content)
+                    .setCancelable(true)
+                    .setOkButton(R.string.btnAccept)
+                    .setCancelButton(R.string.btnCancel)
+                    .setOkButton((dialog, v, inputStr) -> {
+                        if (TextUtils.isEmpty(inputStr)) {
+                            ToastUtils.showShort(context, "操作无效，你输入了空内容！");
                         } else {
                             if (isUser) {
-                                SPUtils.putString("ShareDataToPC.userName", inputText);
+                                SPUtils.putString("ShareDataToPC.userName", inputStr);
                             } else {
-                                SPUtils.putString("ShareDataToPC.userCode", inputText);
+                                SPUtils.putString("ShareDataToPC.userCode", inputStr);
                                 ShareDataToPCManager.getInstant().initUserInfo();
                             }
                             shareExamine(context, !isUser);
                         }
                         dialog.dismiss();
-                    }).setCanCancel(true);
+                        return false;
+                    })
+                    .show();
             return false;
         } else {
             return true;

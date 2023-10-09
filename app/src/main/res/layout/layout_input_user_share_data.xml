@@ -40,12 +40,6 @@
     </RadioGroup>
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/d_10"
-        android:text="请输入动作内容" />
-
-    <TextView
         android:id="@+id/inputHint"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -56,8 +50,9 @@
         android:id="@+id/inputContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/d_10"
-        android:layout_marginBottom="@dimen/d_10"
+        android:paddingTop="@dimen/d_10"
+        android:hint="请输入动作内容"
+        android:paddingBottom="@dimen/d_10"
         android:background="@android:color/transparent" />
 
     <Button

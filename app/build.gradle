@@ -71,7 +71,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-urlconnection:5.0.0-alpha.11'
     implementation 'com.squareup.okio:okio:3.2.0'
     //dialog
-    implementation 'com.kongzue.dialog:dialog:2.5.2'
+    implementation "com.kongzue.dialogx:DialogX:0.0.48"
     //kotlin协程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation 'com.google.devtools.ksp:symbol-processing-api:1.8.20-1.0.11'
