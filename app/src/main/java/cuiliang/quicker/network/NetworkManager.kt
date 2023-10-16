@@ -16,8 +16,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
  * 网络请求管理
  */
 class NetWorkManager : Callback {
-    private var threadPoolExecutor = ThreadPoolExecutor(3, 10, 120
-            , TimeUnit.SECONDS, LinkedBlockingDeque<Runnable>())
+    private var threadPoolExecutor = ThreadPoolExecutor(
+        3, 10, 120, TimeUnit.SECONDS, LinkedBlockingDeque<Runnable>()
+    )
     private var requestList = HashMap<Call, NetRequestObj>()
     private var okHttpClient = OkHttpClient()
 
@@ -124,7 +125,7 @@ class NetWorkManager : Callback {
     interface RequestCallback {
         fun onSuccess(response: Response)
 
-        fun onError(e: IOException, errorMessage: String?)
+        fun onError(e: IOException, errorMessage: String? = null)
     }
 
 }

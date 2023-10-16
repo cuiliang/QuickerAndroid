@@ -11,21 +11,16 @@
 
     <string name="btnCancel">取消</string>
     <string name="btnAccept">确定</string>
-    <string name="shareInputTitle">接下来的操作需要提供必要信息</string>
-    <string name="shareInputHint">注：仅第一次需要输入，后续可以直接分享。如果需要修改，请前往设置修改。\n \n</string>
+    <string name="btnNextTime">下次再说</string>
+    <string name="shareConfig_Title">用户分享信息配置</string>
+    <string name="shareConfig_subTitle">设置用户分享信息后，不在同一个局域网也可以分享。\n不设置用户分享信息时仅支持局域网分享。</string>
+    <string name="shareConfig_Hint">暂时仅支持文字内容，如URL、文字等；图片、视频、文件等后续添加</string>
 
-    <string name="inputUserName">请输入用户名。即登陆账号。</string>
-    <string name="inputPushCode">请输入推送验证码。\n 不知道推送验证码是什么？请点击右下角设置，点击设置页面底部文字</string>
+    <string name="inputUserName">Quicker登录账号</string>
+    <string name="inputPushCode">推送验证码</string>
     <string name="serviceHost">电脑 IP:</string>
     <string name="servicePort">端口:</string>
-    <string name="title_activity_tmp">TmpActivity</string>
 
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <string name="collect_action_str">常用动作</string>
-    <string name="my_task_str">我的任务</string>
     <string name="addNewTask_str">添加任务</string>
     <!-- Strings used for fragments for navigation -->
     <string name="task_edit_accept">接受</string>
@@ -40,5 +35,10 @@
         <item>电量低于30%</item>
         <item>电量低于20%</item>
     </string-array>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_test1">test1</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
 </resources>

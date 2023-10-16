@@ -5,6 +5,8 @@ import cuiliang.quicker.util.GsonUtils
 
 /**
  * Created by Voidcom on 2023/9/11 17:57
+ * https://getquicker.net/KC/Manual/Doc/websocketservice
+ * 常规响应消息:
  * {
  * 	 messageType: 消息类型常量,
  *   serial: 消息编号,
@@ -12,7 +14,7 @@ import cuiliang.quicker.util.GsonUtils
  *   isSuccess: 操作是否成功,
  *   message: 操作失败时的提示消息,
  *   data: 可选的返回数据(文本或对象),
- *   extraData: 可选的额外返回数据(文本或对象)
+ *   extData: 可选的额外返回数据(文本或对象)
  * }
  *
  * 对应于消息中messageType参数的取值。
@@ -25,12 +27,12 @@ import cuiliang.quicker.util.GsonUtils
  */
 data class MsgResponseData(
     val messageType: Int,
-    val replyTo: Int=-1,
+    val replyTo: Int = -1,
     val isSuccess: Boolean,
-    val serial: Int=0,
-    val message: String="",
-    val data: String="",
-    val extraData: String=""
-){
+    val serial: Int = 0,
+    val message: String = "",
+    val data: String = "",
+    val extData: String = ""
+) {
     override fun toString(): String = GsonUtils.toString(this)
 }

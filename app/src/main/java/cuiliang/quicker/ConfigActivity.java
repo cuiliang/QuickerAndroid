@@ -30,7 +30,6 @@ import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.databinding.ActivityConfigBinding;
 import cuiliang.quicker.events.ConnectionStatusChangedEvent;
-import cuiliang.quicker.util.ShareDataToPCManager;
 import cuiliang.quicker.util.ToastUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -97,8 +96,6 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
      * 重置用户的分享信息
      */
     public void reSetShareUserData(View view) {
-        ShareDataToPCManager.getInstant().clearUserInfo();
-        ShareDataToPCManager.getInstant().shareExamine(this, true);
     }
 
     public void sharePushCodeHelp(View view) {

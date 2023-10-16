@@ -30,7 +30,7 @@ public class MyDataDecoder extends CumulativeProtocolDecoder {
     @Override
     public boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
             throws Exception {
-        Log.d(TAG, "解码消息... len = " + in.remaining());
+//        Log.d(TAG, "解码消息... len = " + in.remaining());
 
         /**
          * 假定消息格式为：消息头（int类型：表示消息体的长度、short类型：表示事件号）+消息体

@@ -4,6 +4,9 @@ import android.app.Service
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import cuiliang.quicker.network.websocket.MsgRequestData
+import cuiliang.quicker.network.websocket.ServerRequestFactory
+import cuiliang.quicker.network.websocket.WebSocketClient
 import cuiliang.quicker.ui.taskManager.TaskList
 import cuiliang.quicker.util.KLog
 import java.util.concurrent.ExecutorService
@@ -19,14 +22,20 @@ class TaskManagerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-//        WebSocketClient.instance().connectListeners.add(this)
         taskList = TaskList(applicationContext)
         taskList.readFileConfig()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        WebSocketClient.instance().readyExecuteAction = executeAction
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         taskList.clear()
+
+        WebSocketClient.instance().readyExecuteAction = null
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -36,6 +45,12 @@ class TaskManagerService : Service() {
         return mBinder
     }
 
+    private val executeAction = object : (MsgRequestData) -> Unit {
+        override fun invoke(p1: MsgRequestData) {
+            ServerRequestFactory.decodeRequest(applicationContext,p1)
+        }
+    }
+
     inner class TaskManagerBinder : Binder() {
         fun getTaskList(): TaskList = taskList
     }
@@ -43,5 +58,6 @@ class TaskManagerService : Service() {
     companion object {
         const val TAG = "TaskManagerService"
         val threadPool: ExecutorService = Executors.newScheduledThreadPool(2)
+//        val aa
     }
 }

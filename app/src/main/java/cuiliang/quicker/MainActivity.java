@@ -36,6 +36,7 @@ import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -57,12 +58,10 @@ import cuiliang.quicker.messages.send.CommandMessage;
 import cuiliang.quicker.messages.send.TextDataMessage;
 import cuiliang.quicker.network.websocket.WebSocketClient;
 import cuiliang.quicker.svg.SvgSoftwareLayerSetter;
+import cuiliang.quicker.ui.share.ShareActivity;
 import cuiliang.quicker.ui.taskManager.TaskListActivity;
 import cuiliang.quicker.util.DataPageValues;
 import cuiliang.quicker.util.ImagePicker;
-import cuiliang.quicker.util.ShareDataToPCManager;
-import cuiliang.quicker.util.ShareDialog;
-import cuiliang.quicker.util.ToastUtils;
 import cuiliang.quicker.view.DataPageViewPager;
 import cuiliang.quicker.view.ViewPagerCuePoint;
 
@@ -122,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         requestBuilder = Glide.with(this)
                 .as(PictureDrawable.class)
+                .diskCacheStrategy(DiskCacheStrategy.DATA)
                 .listener(new SvgSoftwareLayerSetter());
         // 给图标增加加载动画
         AnimatedVectorDrawableCompat anim = AnimatedVectorDrawableCompat.create(this, R.drawable.anim_load);
@@ -342,6 +342,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Glide.with(this)
                     .asBitmap()
                     .load(imgContent)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(button.imageView);
 
             button.imageView.setVisibility(View.VISIBLE);
@@ -363,6 +364,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 Glide.with(this)
                         .load(item.IconFileName)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
                         .into(button.imageView);
             }
 
@@ -745,12 +747,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             _lastProcessedMessages.lastUpdateButtonsMessage = serverMsg;
 
-            Log.d(TAG, "更新" + serverMsg.Buttons.length + "个按钮！" +
-                    "\nuserName:" + DataPageValues.contextPageName +
-                    "\nglobalDataPageCount:" + DataPageValues.globalDataPageCount +
-                    "\ncurrentGlobalPageIndex:" + DataPageValues.currentGlobalPageIndex +
-                    "\ncontextDataPageCount:" + DataPageValues.contextDataPageCount +
-                    "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex);
+//            Log.d(TAG, "更新" + serverMsg.Buttons.length + "个按钮！" +
+//                    "\nuserName:" + DataPageValues.contextPageName +
+//                    "\nglobalDataPageCount:" + DataPageValues.globalDataPageCount +
+//                    "\ncurrentGlobalPageIndex:" + DataPageValues.currentGlobalPageIndex +
+//                    "\ncontextDataPageCount:" + DataPageValues.contextDataPageCount +
+//                    "\ncurrentContextPageIndex:" + DataPageValues.currentContextPageIndex);
 
             txtProfileName.setText(serverMsg.ProfileName);
             for (UpdateButtonsMessage.ButtonItem btn : serverMsg.Buttons) {
@@ -822,24 +824,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (v.getId() == R.id.btnPc)
             clientService.getClientManager().sendCommandMsg(CommandMessage.OPEN_MAINWIN, "");
         else if (v.getId() == R.id.shareIv)
-            shareData();
+            startActivity(ShareActivity.Companion.getIntent(this, true));
         else if (v.getId() == R.id.btnMute)
             clientService.getClientManager().sendToggleMuteMsg();
         else if (v.getId() == R.id.btnConfig)
             goConfigActivity(false);
-    }
-
-    /**
-     * 分享操作
-     */
-    public void shareData() {
-        if (ShareDataToPCManager.getInstant().shareExamine(this, true)) {
-            //得到用户信息后可执行分享操作
-            ShareDialog shareDialog = new ShareDialog(this);
-            shareDialog.showShareDialog();
-        } else {
-            ToastUtils.showShort(this, "接下来的操作需要相关信息");
-        }
     }
 }
 

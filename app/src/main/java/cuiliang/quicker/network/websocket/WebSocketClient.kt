@@ -35,6 +35,8 @@ class WebSocketClient private constructor() : WebSocketListener() {
 
     val connectListeners = arrayListOf<ConnectListener>()
 
+    var readyExecuteAction: ((MsgRequestData) -> Unit)? = null
+
     //消息编号
     private var serialNum = -1
         set(value) {
@@ -76,23 +78,27 @@ class WebSocketClient private constructor() : WebSocketListener() {
     override fun onMessage(webSocket: WebSocket, text: String) {
         super.onMessage(webSocket, text)
         KLog.d(TAG, "WebSocket-onMessage:$text")
-        val data = GsonUtils.toBean(text, MsgResponseData::class.java)
         //满足存在replyTo字段和messageType=4的消息判定为客户端请求消息的响应回复
-        when {
-            data.messageType == MessageType.RESPONSE_AUTH.getValue() -> {
+        when (GsonUtils.getStringFromJSON(text, "messageType").toInt()) {
+            MessageType.RESPONSE_AUTH.getValue() -> {
+                val data = GsonUtils.toBean(text, MsgResponseData::class.java)
                 listeners[-1]?.onResponse(data)
                 listeners.remove(-1)
             }
 
-            data.replyTo != -1 && data.messageType == MessageType.RESPONSE_COMMAND.getValue() -> {
-                listeners[data.replyTo]?.onResponse(data)
-                listeners.remove(data.replyTo)
+            MessageType.RESPONSE_COMMAND.getValue() -> {
+                val data = GsonUtils.toBean(text, MsgResponseData::class.java)
+                if (data.replyTo != -1) {
+                    listeners[data.replyTo]?.onResponse(data)
+                    listeners.remove(data.replyTo)
+                }
             }
 
-            data.messageType == MessageType.REQUEST_COMMAND.getValue() -> {
-                //如果messageType=2属于服务端主动向客户端发送消息 todo
-                KLog.d(TAG, text)
+            MessageType.REQUEST_COMMAND.getValue() -> {
+                //如果messageType=2属于服务端主动向客户端发送消息
+                readyExecuteAction?.invoke(GsonUtils.toBean(text, MsgRequestData::class.java))
             }
+
         }
     }
 
@@ -148,6 +154,11 @@ class WebSocketClient private constructor() : WebSocketListener() {
         listeners[++serialNum] = listener
         sendMsg(listener.onRequest(MsgRequestData(serialNum)).toString())
     }
+
+    fun getConnectState(): ConnectionStatus = connState
+
+    fun isConnected(): Boolean =
+        connState == ConnectionStatus.Connected || connState == ConnectionStatus.LoggedIn
 
     private fun sendMsg(data: String) {
         if (connState != ConnectionStatus.Connected && connState != ConnectionStatus.LoggedIn) return

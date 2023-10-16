@@ -1,70 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application
-        android:name="cuiliang.quicker.QuickerApplication"
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
-        <activity
-            android:name="cuiliang.quicker.ui.EventOrActionActivity"
-            android:exported="true" />
-        <activity
-            android:name="cuiliang.quicker.ui.taskEdit.TaskEditActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name="cuiliang.quicker.MainActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:exported="true"
-            android:launchMode="singleTop">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="cuiliang.quicker.ConfigActivity"
-            android:parentActivityName="cuiliang.quicker.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="cuiliang.quicker.MainActivity" />
-        </activity>
-        <activity android:name="cuiliang.quicker.QrcodeScanActivity" />
-        <activity
-            android:name="cuiliang.quicker.ui.taskManager.TaskListActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Material3.Light.NoActionBar" />
-
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="cuiliang.android.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider> <!-- <provider -->
-        <!-- android:name="com.activeandroid.content.ContentProvider" -->
-        <!-- android:authorities="cuiliang.android" -->
-        <!-- android:enabled="true" -->
-        <!-- android:exported="false"> -->
-        <!-- </provider> -->
-        <receiver android:name="cuiliang.quicker.client.NetworkStatusChangeReceiver" />
-
-        <service
-            android:name="cuiliang.quicker.client.ClientService"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name="cuiliang.quicker.service.TaskManagerService"
-            android:enabled="true" />
-    </application>
-
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
 
@@ -76,10 +12,98 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- 允许访问闪光灯的权限 -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.FLASHLIGHT" />
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application
+        android:name=".QuickerApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".ui.EventOrActionActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ui.taskEdit.TaskEditActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true"
+            android:launchMode="singleTop" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ConfigActivity"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cuiliang.quicker.MainActivity" />
+        </activity>
+        <activity android:name=".QrcodeScanActivity" />
+        <activity
+            android:name=".ui.taskManager.TaskListActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity
+            android:name=".ui.share.ShareActivity"
+            android:theme="@style/ActivityDialogStyle"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.SEND" />-->
+
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+
+<!--                <data android:mimeType="image/*" />-->
+<!--            </intent-filter>-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.SEND_MULTIPLE" />-->
+
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+
+<!--                <data android:mimeType="image/*" />-->
+<!--            </intent-filter>-->
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="cuiliang.android.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider> <!-- <provider -->
+        <!-- android:name="com.activeandroid.content.ContentProvider" -->
+        <!-- android:authorities="cuiliang.android" -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="false"> -->
+        <!-- </provider> -->
+        <receiver android:name=".client.NetworkStatusChangeReceiver" />
+
+        <service
+            android:name=".client.ClientService"
+            android:enabled="true"
+            android:exported="true" />
+        <service
+            android:name=".service.TaskManagerService"
+            android:enabled="true" />
+    </application>
 
 </manifest>
