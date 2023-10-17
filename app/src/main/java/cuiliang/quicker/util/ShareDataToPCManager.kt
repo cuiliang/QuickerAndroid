@@ -24,30 +24,8 @@ import java.io.IOException
  * [文档](https://getquicker.net/kc/manual/doc/connection)
  */
 class ShareDataToPCManager private constructor() {
-    //用户名，用于分享操作
-    val userName: MutableState<String> by lazy { mutableStateOf("") }
 
-    //用户推送验证码，用于分享操作
-    val authCode: MutableState<String> by lazy { mutableStateOf("") }
-
-    /**
-     * 是否有用户信息，这是分享操作成功的必要条件
-     * @return true有
-     */
-    val isHaveUserInfo: Boolean = userName.value.isNotEmpty() && authCode.value.isNotEmpty()
-
-    fun readShareConfig() {
-        userName.value = SPUtils.getString(SHARE_USER_NAME, "")
-        authCode.value = SPUtils.getString(SHARE_AUTH_CODE, "")
-    }
-
-    fun saveShareConfig() {
-        KLog.d(TAG, "用户名:$userName; 推送验证码:$authCode")
-        SPUtils.putString(SHARE_USER_NAME, userName.value)
-        SPUtils.putString(SHARE_AUTH_CODE, authCode.value)
-    }
-
-    fun sendShareText(text: String, callback: ((Boolean) -> Unit)) {
+    fun sendShareText(name: String, code: String, text: String, callback: ((Boolean) -> Unit)) {
         if (WebSocketClient.instance().isConnected()) {
             WebSocketClient.instance().newCall(object : WebSocketNetListener() {
                 override fun onRequest(data: MsgRequestData): MsgRequestData {
@@ -68,16 +46,16 @@ class ShareDataToPCManager private constructor() {
                 override fun onFail(error: String) {
                     super.onFail(error)
                     //WebSocket失败后尝试使用推送服务发送分享数据
-                    pushShareToPC(text, callback)
+                    pushShareToPC(name, code, text, callback)
                 }
             })
         } else {
-            pushShareToPC(text, callback)
+            pushShareToPC(name, code, text, callback)
         }
     }
 
-    fun pushShareToPC(data: String, callback: ((Boolean) -> Unit)) {
-        pushShareToPC(data, object : RequestCallback {
+    fun pushShareToPC(name: String, code: String, data: String, callback: ((Boolean) -> Unit)) {
+        pushShareToPC(name, code, data, object : RequestCallback {
             override fun onSuccess(response: Response) {
                 callback(true)
             }
@@ -93,15 +71,15 @@ class ShareDataToPCManager private constructor() {
      * 注：该请求为异步操作
      * [文档](https://getquicker.net/kc/manual/doc/connection)
      */
-    fun pushShareToPC(data: String, callback: RequestCallback?) {
-        if (!isHaveUserInfo) {
-            Log.e(TAG, "用户名或推送验证码为空！userName:$userName;userCode:$authCode")
+    fun pushShareToPC(name: String, code: String, data: String, callback: RequestCallback?) {
+        if (name.isEmpty() || code.isEmpty() || data.isEmpty()) {
+            Log.e(TAG, "用户名或推送验证码为空！")
             callback?.onError(IOException(""))
             return
         }
         val requestObj = NetRequestObj(ShareApi.shareUrl, callback)
-        requestObj.addBody("toUser", userName.value)
-        requestObj.addBody("code", authCode.value)
+        requestObj.addBody("toUser", name)
+        requestObj.addBody("code", code)
         requestObj.addBody("operation", "action")
         requestObj.addBody("data", data)
         requestObj.isEncode = true

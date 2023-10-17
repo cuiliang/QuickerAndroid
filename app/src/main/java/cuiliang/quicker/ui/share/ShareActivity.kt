@@ -24,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,34 +38,37 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.lifecycle.lifecycleScope
 import com.cuiliang.quicker.ui.BaseComposableActivity
-import com.cuiliang.quicker.ui.EmptyViewModel
 import cuiliang.quicker.R
-import cuiliang.quicker.ui.share.ui.theme.QuickerAndroidTheme
-import cuiliang.quicker.util.KLog
-import cuiliang.quicker.util.ShareDataToPCManager
+import cuiliang.quicker.ui.share.theme.QuickerAndroidTheme
 import cuiliang.quicker.util.ToastUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class ShareActivity : BaseComposableActivity<EmptyViewModel>() {
-    val showLoading: MutableState<Boolean> by lazy { mutableStateOf(true) }
+class ShareActivity : BaseComposableActivity<ShareViewModel>() {
     var startActivityShowShareConfig: Boolean = false
 
-
-    override val mViewModel: EmptyViewModel by lazy { EmptyViewModel() }
+    override val mViewModel: ShareViewModel by lazy { ShareViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ShareDataToPCManager.instant.readShareConfig()
+        lifecycleScope.launch {
+            mViewModel.readShareConfig(applicationContext)
+        }
         startActivityShowShareConfig = intent.getBooleanExtra("showShareConfig", false)
         if (startActivityShowShareConfig) {
-            showLoading.value = false
+            mViewModel.showLoading.value = false
         } else
-            showLoading.value = ShareDataToPCManager.instant.isHaveUserInfo
+            mViewModel.showLoading.value = mViewModel.haveUserConfig()
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             QuickerAndroidTheme {
-                MainContext()
+                MainContext(mViewModel.userName, mViewModel.authCode, mViewModel.showLoading)
             }
         }
     }
@@ -75,56 +77,50 @@ class ShareActivity : BaseComposableActivity<EmptyViewModel>() {
         when {
             intent?.action == Intent.ACTION_SEND -> {
                 if ("text/plain" == intent.type) {
-                    handleSendText(intent) // Handle text being sent
+                    mViewModel.handleSendText(intent) {
+                        lifecycleScope.launch {
+                            withContext(Dispatchers.Main.immediate) {
+                                ToastUtils.showShort(
+                                    applicationContext,
+                                    if (it) "发送成功" else "分享失败"
+                                )
+//                                delay(100)
+                                finish()
+                            }
+                        }
+                    }
                 } else if (intent.type?.startsWith("image/") == true) {
-//                    handleSendImage(intent) // Handle single image being sent
+                    mViewModel.handleSendImage(intent) {}
                 }
             }
 
-//            intent?.action == Intent.ACTION_SEND_MULTIPLE
-//                    && intent.type?.startsWith("image/") == true -> {
-//                handleSendMultipleImages(intent) // Handle multiple images being sent
-//            }
-        }
-    }
-
-    private fun handleSendText(intent: Intent) {
-        intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
-            KLog.d("ShareActivity", "it:$it")
-            ShareDataToPCManager.instant.sendShareText(it) { result ->
-                ToastUtils.showShort(this@ShareActivity, if (result) "发送成功" else "分享失败")
-                finish()
+            intent?.action == Intent.ACTION_SEND_MULTIPLE
+                    && intent.type?.startsWith("image/") == true -> {
+                mViewModel.handleSendMultipleImages(intent) {}
             }
         }
     }
-
-    //    private fun handleSendImage(intent: Intent) {
-//        (intent.getParcelableExtra<Parcelable>(Intent.EXTRA_STREAM) as? Uri)?.let {
-//            // Update UI to reflect image being shared
-//        }
-//    }
-//
-//    private fun handleSendMultipleImages(intent: Intent) {
-//        intent.getParcelableArrayListExtra<Parcelable>(Intent.EXTRA_STREAM)?.let {
-//            // Update UI to reflect multiple images being shared
-//        }
-//    }
 
     val onClick = object : (Int) -> Unit {
         override fun invoke(p1: Int) {
             if (startActivityShowShareConfig) {
                 finish()
             } else {
-                showLoading.value = true
+                mViewModel.showLoading.value = true
             }
 
             if (p1 == 1) {
-                ShareDataToPCManager.instant.saveShareConfig()
+                lifecycleScope.launch {
+                    mViewModel.saveShareConfig(applicationContext)
+                }
             }
         }
     }
 
     companion object {
+        val SHARE_USER_NAME = stringPreferencesKey("SHARE_USER_NAME")
+        val SHARE_AUTH_CODE = stringPreferencesKey("SHARE_AUTH_CODE")
+
         fun getIntent(context: Context, showConfig: Boolean = false): Intent =
             Intent(context, ShareActivity::class.java).apply {
                 putExtra("showShareConfig", showConfig)
@@ -133,20 +129,25 @@ class ShareActivity : BaseComposableActivity<EmptyViewModel>() {
 }
 
 @Composable
-fun MainContext() {
-    val ctx = LocalContext.current
-    Surface(color = if (!(ctx as ShareActivity).showLoading.value) Color.White else Color.Transparent) {
-        if (!ctx.showLoading.value) FirstUse() else DisplayLoading()
+fun MainContext(
+    name: MutableState<String> = mutableStateOf(""),
+    code: MutableState<String> = mutableStateOf(""),
+    loading: MutableState<Boolean> = mutableStateOf(false)
+) {
+    Surface(color = if (!loading.value) Color.White else Color.Transparent) {
+        if (!loading.value) FirstUse(name, code) else DisplayLoading()
     }
 }
 
 /**
  * 第一次使用要配置使用信息
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun FirstUse() {
+fun FirstUse(
+    name: MutableState<String> = mutableStateOf(""),
+    code: MutableState<String> = mutableStateOf("")
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(10.dp)
     ) {
@@ -155,20 +156,22 @@ fun FirstUse() {
         CreateText(R.string.shareConfig_subTitle)
         CreateText(R.string.shareConfig_Hint)
         Column(horizontalAlignment = Alignment.Start) {
-            CreateInput(v = ShareDataToPCManager.instant.userName, resId = R.string.inputUserName)
-            CreateInput(v = ShareDataToPCManager.instant.authCode, resId = R.string.inputPushCode)
+            CreateInput(v = name, resId = R.string.inputUserName)
+            CreateInput(v = code, resId = R.string.inputPushCode)
         }
         ShowAuthCodeHelpPic(Modifier.padding(vertical = 20.dp))
         Row(modifier = Modifier, Arrangement.Start, Alignment.CenterVertically) {
-            CreateButton(Modifier.padding(end = 20.dp), resId = R.string.btnNextTime) {
+            CreateButton(
+                Modifier.padding(end = 20.dp),
+                resId = R.string.btnNextTime,
+                isEnable = name.value.isNotEmpty() && code.value.isNotEmpty()
+            ) {
                 (ctx as ShareActivity).onClick(0)
             }
             CreateButton(
                 Modifier.padding(start = 20.dp),
                 resId = R.string.btnAccept,
-                isEnable = ShareDataToPCManager.instant.let {
-                    it.userName.value.isNotEmpty() && it.authCode.value.isNotEmpty()
-                }
+                isEnable = name.value.isNotEmpty() && code.value.isNotEmpty()
             ) {
                 (ctx as ShareActivity).onClick(1)
             }
@@ -249,90 +252,3 @@ fun DisplayLoading() {
     }
     (LocalContext.current as ShareActivity).shareText()
 }
-
-//@Composable
-//fun Greeting(name: String, modifier: Modifier = Modifier) {
-//    Column(
-//        verticalArrangement = Arrangement.Center,
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Row(
-//            horizontalArrangement = Arrangement.Center,
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Text(
-//                text = "Hello $name!",
-//                color = MaterialTheme.colorScheme.primary,
-//                fontSize = 30.sp,
-//                modifier = modifier.wrapContentHeight()
-//            )
-//            Text(text = "12121",
-//                style = MaterialTheme.typography.titleLarge,
-//                color = MaterialTheme.colorScheme.primary,
-//                onTextLayout = {
-//                })
-//        }
-//        Text(
-//            text = "Hello $name!",
-//            modifier = modifier
-//
-//        )
-//        Text(text = "12121", onTextLayout = {
-//
-//        })
-//    }
-//}
-
-//@Preview(
-//    name = "Dark Mode"
-//)
-//@Preview(
-//    uiMode = Configuration.UI_MODE_NIGHT_YES,
-//    showBackground = true,
-//    name = "Light Mode"
-//)
-//@Composable
-//fun GreetingPreview() {
-//
-////    QuickerAndroidTheme {
-////        Greeting("Android")
-//////        Surface(
-//////            modifier = Modifier.fillMaxSize(),
-//////            color = MaterialTheme.colorScheme.background
-//////        ) {
-//////            Greeting("Android")
-//////        }
-////    }
-//    val array = arrayListOf<Message>()
-//    (0..10).forEach {
-//        array.add(Message().apply {
-//            what = it
-//        })
-//
-//    }
-////    canList(msg = array)
-//    val a = arrayListOf<String>()
-//    (0..1).forEach {
-//        a.add("---------------------$it")
-//    }
-//    aaa(a)
-//}
-
-//@Composable
-//fun aaa(names: List<String>) {
-//    names.forEach {
-//        Text("hi $it")
-//    }
-//}
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun canList(msg: List<Message>) {
-//    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-//        items(items = msg) {
-//            Text(text = it.what.toString())
-////            ListItem(headlineText = {  })
-//        }
-//    }
-//}
-

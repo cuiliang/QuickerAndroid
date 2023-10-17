@@ -5,6 +5,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import cuiliang.quicker.util.KLog
 import cuiliang.quicker.util.ToastUtils
 
@@ -14,12 +16,16 @@ import cuiliang.quicker.util.ToastUtils
  * @see MsgRequestData
  */
 object ServerRequestFactory {
+    private val mHandler=Handler(Looper.getMainLooper())
     fun decodeRequest(ctx: Context, data: MsgRequestData) {
         when (data.extData) {
             "ShareAndroid" -> {
                 when (data.operation) {
-                    "copy" -> (ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).let {
-                        it.setPrimaryClip(ClipData.newPlainText(data.data, data.data))
+                    "copy" -> {
+                        (ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(data.data, data.data))
+                        mHandler.post {
+                            ToastUtils.showShort(ctx,"剪贴板增加: ${data.data}")
+                        }
                     }
 
                     "open" -> if (data.data.startsWith("http:") || data.data.startsWith("https:")) {
@@ -31,6 +37,9 @@ object ServerRequestFactory {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
                         )
+                        mHandler.post {
+                            ToastUtils.showShort(ctx,"打开网页：${data.data}")
+                        }
                         KLog.d("decodeRequest", "打开网页：${data.data}")
                     }
                 }

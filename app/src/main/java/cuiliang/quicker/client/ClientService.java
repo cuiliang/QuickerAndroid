@@ -1,14 +1,21 @@
 package cuiliang.quicker.client;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -20,6 +27,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import cuiliang.quicker.MainActivity;
+import cuiliang.quicker.R;
 import cuiliang.quicker.events.ServerMessageEvent;
 import cuiliang.quicker.events.WifiStatusChangeEvent;
 import cuiliang.quicker.messages.MessageBase;
@@ -81,7 +90,7 @@ public class ClientService extends Service implements ConnectServiceCallback {
     public void onCreate() {
         Log.d(TAG, "onCreate");
         super.onCreate();
-
+        createNotification();
         //
         // wifi 监控
         IntentFilter filter = new IntentFilter();
@@ -209,5 +218,31 @@ public class ClientService extends Service implements ConnectServiceCallback {
                 Log.e(TAG, "自动连接结束，没有扫描到有效ip;ipItems.size:" + ipItems.size());
             }
         }
+    }
+
+    private void createNotification(){
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        NotificationCompat.Builder notification; //创建服务对象
+        NotificationManager manager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel=new NotificationChannel(getPackageName(),"Quicker", NotificationManager.IMPORTANCE_HIGH);
+            channel.enableLights(true);
+            channel.setShowBadge(true);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(channel);
+            notification = new NotificationCompat.Builder(this,getPackageName());
+        }else {
+            notification = new NotificationCompat.Builder(this);
+        }
+        Notification notification1 =notification.setContentTitle("Quicker")
+                .setContentText("Quicker 连接服务")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(1,notification1);//这个就是之前说的startForeground
     }
 }

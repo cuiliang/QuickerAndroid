@@ -1,4 +1,4 @@
-package cuiliang.quicker.ui.share.ui.theme
+package cuiliang.quicker.ui.share.theme
 
 import androidx.compose.ui.graphics.Color
 

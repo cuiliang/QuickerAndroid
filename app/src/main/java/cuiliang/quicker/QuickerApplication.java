@@ -2,6 +2,7 @@ package cuiliang.quicker;
 
 import android.app.Application;
 import android.content.Intent;
+import android.os.Build;
 import android.util.DisplayMetrics;
 
 import cuiliang.quicker.client.ClientService;
@@ -16,7 +17,11 @@ public class QuickerApplication extends Application {
         super.onCreate();
         displayMetrics = getResources().getDisplayMetrics();
         SPUtils.init(this);
-        startService(new Intent(this, ClientService.class));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(new Intent(this, ClientService.class));
+        } else {
+            startService(new Intent(this, ClientService.class));
+        }
         startService(new Intent(this, TaskManagerService.class));
 
 //        closeHideApiDialog();
