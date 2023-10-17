@@ -12,8 +12,8 @@ android {
         applicationId "cuiliang.quicker"
         minSdkVersion 23
         targetSdkVersion 34
-        versionCode 102
-        versionName "1.0.2"
+        versionCode 103
+        versionName "1.0.3"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables {
             useSupportLibrary true
