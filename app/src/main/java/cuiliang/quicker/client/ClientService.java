@@ -221,14 +221,13 @@ public class ClientService extends Service implements ConnectServiceCallback {
     }
 
     private void createNotification(){
-        Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        NotificationCompat.Builder notification; //创建服务对象
-        NotificationManager manager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        NotificationCompat.Builder notification;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager manager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             NotificationChannel channel=new NotificationChannel(getPackageName(),"Quicker", NotificationManager.IMPORTANCE_HIGH);
             channel.enableLights(true);
+            channel.setDescription("Quicker 连接服务");
             channel.setShowBadge(true);
             channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             manager.createNotificationChannel(channel);
@@ -241,8 +240,8 @@ public class ClientService extends Service implements ConnectServiceCallback {
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
-                .setContentIntent(pendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // 7.0 设置优先级
                 .build();
-        startForeground(1,notification1);//这个就是之前说的startForeground
+        startForeground(1,notification1);
     }
 }

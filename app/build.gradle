@@ -52,6 +52,14 @@ android {
     packagingOptions {
         resources.excludes += "DebugProbesKt.bin"
     }
+    signingConfigs{
+        release {
+            storeFile file("/keystore/quicker.jks")
+            storePassword "quicker"
+            keyAlias "key0"
+            keyPassword "quicker"
+        }
+    }
 }
 
 dependencies {

@@ -70,7 +70,7 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
     @Override
     public void onClick(View v) {
         //自 ADT 版本 14 以来，资源 ID 不是库项目中的常量，因此在 switch 语句中使用它们会报错
-        if (v.getId()==R.id.btnSave){
+        if (v.getId() == R.id.btnSave) {
             //连接按钮被点击后应该设为不可点击，直到连接结果返回取消该状态
             v.setClickable(false);
             v.setEnabled(false);
@@ -82,8 +82,13 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
             if (clientService != null) {
                 clientService.getClientManager().connect(1, null);
             }
-        }else if (v.getId()==R.id.btnPc){
-            String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
+        } else if (v.getId() == R.id.btnPc) {
+
+            String[] perms;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU)
+                perms = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.POST_NOTIFICATIONS};
+            else
+                perms = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
             if (!EasyPermissions.hasPermissions(ConfigActivity.this, perms)) {
                 requestCodeQRCodePermissions();
             } else {
@@ -146,7 +151,7 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
 
     @Override
     public void onActivityResult(ActivityResult result) {
-        if (result.getResultCode() != RESULT_OK||result.getData()==null) {
+        if (result.getResultCode() != RESULT_OK || result.getData() == null) {
             Log.d(TAG, "扫描失败！");
             return;
         }
@@ -172,7 +177,7 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
         updateConnectionStatus(event.status, event.message);
 
         if (event.status == ConnectionStatus.LoggedIn) {
-            ToastUtils.showShort(this,"连接成功！");
+            ToastUtils.showShort(this, "连接成功！");
             Intent goMainActivity = new Intent(this, MainActivity.class);
             goMainActivity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(goMainActivity);
@@ -222,7 +227,11 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
 
     @AfterPermissionGranted(REQUEST_CODE_QRCODE_PERMISSIONS)
     private void requestCodeQRCodePermissions() {
-        String[] perms = {Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
+        String[] perms;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU)
+            perms = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.POST_NOTIFICATIONS};
+        else
+            perms = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE};
         if (!EasyPermissions.hasPermissions(this, perms)) {
             EasyPermissions.requestPermissions(this, "扫描二维码需要打开相机和散光灯的权限", REQUEST_CODE_QRCODE_PERMISSIONS, perms);
         }

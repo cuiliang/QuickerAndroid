@@ -38,14 +38,12 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.lifecycleScope
 import com.cuiliang.quicker.ui.BaseComposableActivity
 import cuiliang.quicker.R
 import cuiliang.quicker.ui.share.theme.QuickerAndroidTheme
 import cuiliang.quicker.util.ToastUtils
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -75,16 +73,21 @@ class ShareActivity : BaseComposableActivity<ShareViewModel>() {
 
     fun shareText() {
         when {
-            intent?.action == Intent.ACTION_SEND -> {
-                if ("text/plain" == intent.type) {
-                    mViewModel.handleSendText(intent) {
+            intent?.action == Intent.ACTION_SEND ||
+                    intent?.action == Intent.ACTION_PROCESS_TEXT -> {
+                if (intent.type?.startsWith("text/") == true) {
+                    val txt = when (intent?.action) {
+                        Intent.ACTION_SEND -> intent.getStringExtra(Intent.EXTRA_TEXT)
+                        Intent.ACTION_PROCESS_TEXT -> intent.getStringExtra(Intent.EXTRA_PROCESS_TEXT)
+                        else -> return
+                    } ?: return
+                    mViewModel.handleSendText(txt) {
                         lifecycleScope.launch {
                             withContext(Dispatchers.Main.immediate) {
                                 ToastUtils.showShort(
                                     applicationContext,
                                     if (it) "发送成功" else "分享失败"
                                 )
-//                                delay(100)
                                 finish()
                             }
                         }
@@ -118,8 +121,6 @@ class ShareActivity : BaseComposableActivity<ShareViewModel>() {
     }
 
     companion object {
-        val SHARE_USER_NAME = stringPreferencesKey("SHARE_USER_NAME")
-        val SHARE_AUTH_CODE = stringPreferencesKey("SHARE_AUTH_CODE")
 
         fun getIntent(context: Context, showConfig: Boolean = false): Intent =
             Intent(context, ShareActivity::class.java).apply {
@@ -134,9 +135,12 @@ fun MainContext(
     code: MutableState<String> = mutableStateOf(""),
     loading: MutableState<Boolean> = mutableStateOf(false)
 ) {
-    Surface(color = if (!loading.value) Color.White else Color.Transparent) {
-        if (!loading.value) FirstUse(name, code) else DisplayLoading()
+    Surface(color = Color.Transparent) {
+        DisplayLoading()
     }
+//    Surface(color = if (!loading.value) Color.White else Color.Transparent) {
+//        if (!loading.value) FirstUse(name, code) else DisplayLoading()
+//    }
 }
 
 /**
@@ -163,8 +167,7 @@ fun FirstUse(
         Row(modifier = Modifier, Arrangement.Start, Alignment.CenterVertically) {
             CreateButton(
                 Modifier.padding(end = 20.dp),
-                resId = R.string.btnNextTime,
-                isEnable = name.value.isNotEmpty() && code.value.isNotEmpty()
+                resId = R.string.btnNextTime
             ) {
                 (ctx as ShareActivity).onClick(0)
             }

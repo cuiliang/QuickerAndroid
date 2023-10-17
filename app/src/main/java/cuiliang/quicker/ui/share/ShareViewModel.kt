@@ -9,11 +9,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.cuiliang.quicker.ui.BaseModel
 import com.cuiliang.quicker.ui.BaseViewModel
 import cuiliang.quicker.util.KLog
 import cuiliang.quicker.util.ShareDataToPCManager
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /**
@@ -21,8 +25,6 @@ import kotlinx.coroutines.flow.map
  *
  */
 class ShareViewModel : BaseViewModel() {
-    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ShareConfig")
-
     //用户名，用于分享操作
     val userName: MutableState<String> by lazy { mutableStateOf("") }
 
@@ -42,42 +44,29 @@ class ShareViewModel : BaseViewModel() {
     fun haveUserConfig(): Boolean = userName.value.isNotEmpty() && authCode.value.isNotEmpty()
 
     suspend fun readShareConfig(context: Context) {
-//        val userNameFlow: Flow<String>
-//        val authCodeFlow: Flow<String>
-        context.dataStore.data.run {
-            map {
-                it[ShareActivity.SHARE_USER_NAME] ?: ""
-            }.collect{
-                userName.value = it
+        context.dataStore.data.map {
+            return@map arrayListOf<String>().apply {
+                add(it[SHARE_USER_NAME] ?: "")
+                add(it[SHARE_AUTH_CODE] ?: "")
             }
-            map {
-                it[ShareActivity.SHARE_AUTH_CODE] ?: ""
-            }.collect{
-                authCode.value = it
-            }
+        }.collect {
+            userName.value = it[0]
+            authCode.value = it[1]
         }
-//        val userNameFlow = context.dataStore.data.map {
-//            it[ShareActivity.SHARE_USER_NAME] ?: ""
-//        }
-//        val authCodeFlow = context.dataStore.data.map {
-//            it[ShareActivity.SHARE_AUTH_CODE] ?: ""
-//        }
-//        userNameFlow.collect { userName.value = it }
-//        authCodeFlow.collect { authCode.value = it }
     }
 
     suspend fun saveShareConfig(context: Context) {
         context.dataStore.edit {
-            it[ShareActivity.SHARE_USER_NAME] = userName.value
-            it[ShareActivity.SHARE_AUTH_CODE] = authCode.value
+            it[SHARE_USER_NAME] = userName.value
+            it[SHARE_AUTH_CODE] = authCode.value
         }
     }
 
     /**
      * @param callback 执行在IO线程
      */
-    fun handleSendText(intent: Intent, callback: ((Boolean) -> Unit)) {
-        intent.getStringExtra(Intent.EXTRA_TEXT)?.let {
+    fun handleSendText(txt: String, callback: ((Boolean) -> Unit)) {
+        txt?.let {
             KLog.d("ShareActivity", "it:$it")
             ShareDataToPCManager.instant.sendShareText(
                 userName.value,
@@ -98,5 +87,11 @@ class ShareViewModel : BaseViewModel() {
         intent.getParcelableArrayListExtra<Parcelable>(Intent.EXTRA_STREAM)?.let {
             // Update UI to reflect multiple images being shared
         }
+    }
+
+    companion object {
+        private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ShareConfig")
+        private val SHARE_USER_NAME = stringPreferencesKey("SHARE_USER_NAME")
+        private val SHARE_AUTH_CODE = stringPreferencesKey("SHARE_AUTH_CODE")
     }
 }

@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 界面相关操作
         //
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         // 禁止屏幕关闭
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -480,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 隐藏虚拟按键，并且全屏
+     * 隐藏虚拟按键
      */
     protected void hideBottomUIMenu() {
         //隐藏虚拟按键，并且全屏
@@ -492,8 +492,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // hide navigation bar permanently in android activity
             // touch the screen, the navigation bar will not show
             flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE;
 
         } else {
             // touch the screen, the navigation bar will show
