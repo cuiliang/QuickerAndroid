@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.VibrationEffect;
@@ -30,6 +31,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
@@ -38,19 +40,16 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 
 import cuiliang.quicker.client.ClientConfig;
+import cuiliang.quicker.client.ClientManager;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.client.MessageCache;
-import cuiliang.quicker.events.ConnectionStatusChangedEvent;
-import cuiliang.quicker.events.ServerMessageEvent;
+import cuiliang.quicker.client.QuickerServiceHandler;
+import cuiliang.quicker.client.QuickerServiceListener;
 import cuiliang.quicker.messages.MessageBase;
 import cuiliang.quicker.messages.recv.UpdateButtonsMessage;
 import cuiliang.quicker.messages.recv.VolumeStateMessage;
@@ -172,9 +171,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.d(TAG, "绑定成功调用：onServiceConnected");
                 ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
                 clientService = binder.getService();
+                ClientManager.getInstance().addConnectListener(connectListener);
 
-                processPcMessage(clientService.getMessageCache().lastVolumeStateMessage);
-                processPcMessage(clientService.getMessageCache().lastUpdateButtonsMessage);
+                processPcMessage(clientService.messageCache.lastVolumeStateMessage);
+                processPcMessage(clientService.messageCache.lastUpdateButtonsMessage);
             }
 
             /**
@@ -620,7 +620,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    Handler handler = new Handler() {
+    Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {// handler接收到消息后就会执行此方法
             mDialog.dismiss();// 关闭ProgressDialog
@@ -645,8 +645,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Log.d(TAG, "onStart");
         super.onStart();
         // The activity is about to become visible.
-
-        EventBus.getDefault().register(this);
+        QuickerServiceHandler.Companion.getInstant().addListener(listener);
 
         // 绑定到后台服务
         bindService(clientServiceIntent, conn, Service.BIND_AUTO_CREATE);
@@ -697,8 +696,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             wakeLock.release();
             wakeLock = null;
         }
-
-        EventBus.getDefault().unregister(this);
+        ClientManager.getInstance().removeConnectListener(connectListener);
+        QuickerServiceHandler.Companion.getInstant().removeListener(listener);
 
         if (clientService != null) {
             //clientService = null;  //保留引用的值，避免空指针问题
@@ -708,17 +707,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     //region 服务器消息的处理
-
-    /**
-     * 处理收到的pc消息
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(ServerMessageEvent event) {
-        MessageBase originMessage = event.serverMessage;
-        processPcMessage(originMessage);
-    }
 
     /**
      * 处理pc消息
@@ -786,22 +774,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
-
-
-    /**
-     * 网络连接状态改变了。
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(ConnectionStatusChangedEvent event) {
-        // 如果连接断开，进入配置页面
-        if (event.status == ConnectionStatus.Disconnected
-                || event.status == ConnectionStatus.LoginFailed) {
-            goConfigActivity(true);
-        }
-    }
-
     //endregion
 
 
@@ -829,6 +801,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         else if (v.getId() == R.id.btnConfig)
             goConfigActivity(false);
     }
+
+    private final QuickerServiceListener listener = new QuickerServiceListener() {
+
+        @Override
+        public void onMessage(@NonNull MessageBase msg) {
+            super.onMessage(msg);
+            handler.post(() -> {
+                processPcMessage(msg);
+            });
+        }
+    };
+
+    private final ClientManager.QuickerConnectListener connectListener = (status, message) -> {
+        handler.post(() -> {
+            // 如果连接断开，进入配置页面
+            if (status == ConnectionStatus.Disconnected || status == ConnectionStatus.LoginFailed) {
+                goConfigActivity(true);
+            }
+        });
+    };
 }
 
 

@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import cuiliang.quicker.network.websocket.MsgRequestData
-import cuiliang.quicker.network.websocket.ServerRequestFactory
+import cuiliang.quicker.network.websocket.ServiceRequestFactory
 import cuiliang.quicker.network.websocket.WebSocketClient
 import cuiliang.quicker.ui.taskManager.TaskList
 import cuiliang.quicker.util.KLog
@@ -47,7 +47,7 @@ class TaskManagerService : Service() {
 
     private val executeAction = object : (MsgRequestData) -> Unit {
         override fun invoke(p1: MsgRequestData) {
-            ServerRequestFactory.decodeRequest(applicationContext,p1)
+            ServiceRequestFactory.decodeRequest(applicationContext, p1)
         }
     }
 

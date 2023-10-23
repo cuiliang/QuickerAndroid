@@ -138,6 +138,7 @@ fun MainContext(
     Surface(color = Color.Transparent) {
         DisplayLoading()
     }
+    //判断是否显示第一次使用时的推送配置页面，因为离线场景没坐，所以推送这块先去掉了
 //    Surface(color = if (!loading.value) Color.White else Color.Transparent) {
 //        if (!loading.value) FirstUse(name, code) else DisplayLoading()
 //    }

@@ -4,20 +4,17 @@ import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 
 import cuiliang.quicker.BuildConfig;
-import cuiliang.quicker.events.ConnectionStatusChangedEvent;
-import cuiliang.quicker.events.ServerMessageEvent;
-import cuiliang.quicker.events.SessionClosedEvent;
 import cuiliang.quicker.messages.MessageBase;
 import cuiliang.quicker.messages.recv.LoginStateMessage;
 import cuiliang.quicker.messages.send.ButtonClickedMessage;
@@ -29,7 +26,6 @@ import cuiliang.quicker.messages.send.ToggleMuteMessage;
 import cuiliang.quicker.messages.send.UpdateVolumeMessage;
 import cuiliang.quicker.network.ConnectServiceCallback;
 import cuiliang.quicker.network.MyCodecFactory;
-
 
 /**
  * 客户端调度类
@@ -44,9 +40,9 @@ public class ClientManager {
 
     private Thread _connectThread;
 
-
     // 连接状态
     private ConnectionStatus _status = ConnectionStatus.Disconnected;
+    private final HashSet<QuickerConnectListener> connectListeners=new HashSet<>();
 
     public static ClientManager getInstance() {
         if (clientManager == null) throw new NullPointerException(
@@ -57,7 +53,7 @@ public class ClientManager {
 
     public ClientManager() {
         clientManager = this;
-        EventBus.getDefault().register(this);
+        QuickerServiceHandler.Companion.getInstant().addListener(listener);
     }
 
 
@@ -66,7 +62,6 @@ public class ClientManager {
     }
 
     public ConnectionStatus getConnectionStatus() {
-
         return _status;
     }
 
@@ -81,6 +76,7 @@ public class ClientManager {
 
     /**
      * 建立连接
+     *
      * @param retry
      */
     public void connect(final int retry, final ConnectServiceCallback callback) {
@@ -116,7 +112,7 @@ public class ClientManager {
 //        mSocketConnector.getFilterChain().addLast("heartbeat", heartFilter);
 
         //设置 handler 处理业务逻辑
-        _connector.setHandler(new MinaClientHandler());
+        _connector.setHandler(QuickerServiceHandler.Companion.getInstant());
         InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.getInstance().mServerHost, Integer.parseInt(ClientConfig.getInstance().mServerPort));
         Log.i(TAG, "当前进行连接的IP:" + ClientConfig.getInstance().mServerHost + ";端口：" + ClientConfig.getInstance().mServerPort);
         //配置服务器地址
@@ -178,7 +174,9 @@ public class ClientManager {
      */
     private void changeStatus(ConnectionStatus status, String message) {
         _status = status;
-        EventBus.getDefault().post(new ConnectionStatusChangedEvent(_status, message));
+        for (QuickerConnectListener l:connectListeners){
+            l.statusUpdate(_status,message);
+        }
     }
 
 
@@ -209,6 +207,7 @@ public class ClientManager {
             _session.closeNow();
             _session = null;
         }
+        QuickerServiceHandler.Companion.getInstant().removeListener(listener);
     }
 
 
@@ -332,41 +331,37 @@ public class ClientManager {
         sendMessage(msg);
     }
 
-    /**
-     * 连接断开
-     *
-     * @param event
-     */
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(SessionClosedEvent event) {
-        this.changeStatus(ConnectionStatus.Disconnected, "已断开");
+    public void addConnectListener(QuickerConnectListener l){
+        connectListeners.add(l);
     }
 
+    public void removeConnectListener(QuickerConnectListener l){
+        connectListeners.remove(l);
+    }
 
-    /**
-     * 处理收到的pc消息
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMessageEvent(ServerMessageEvent event) {
-        MessageBase originMessage = event.serverMessage;
-
-        if (originMessage instanceof LoginStateMessage) {
-
-
-            LoginStateMessage msg = (LoginStateMessage) originMessage;
-
-            Log.d(TAG, "登录状态：" + msg.IsLoggedIn.toString());
-
-            if (msg.IsLoggedIn) {
+    private final QuickerServiceListener listener = new QuickerServiceListener() {
+        @Override
+        public void onMessage(@NonNull MessageBase msg) {
+            super.onMessage(msg);
+            if (!(msg instanceof LoginStateMessage loginMsg)) return;
+            Log.d(TAG, "登录状态：" + loginMsg.IsLoggedIn.toString());
+            if (loginMsg.IsLoggedIn) {
                 //updateConnectionStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
-                this.changeStatus(ConnectionStatus.LoggedIn, msg.ErrorMessage);
+                changeStatus(ConnectionStatus.LoggedIn, loginMsg.ErrorMessage);
             } else {
-                this.changeStatus(ConnectionStatus.LoginFailed, msg.ErrorMessage);
+                changeStatus(ConnectionStatus.LoginFailed, loginMsg.ErrorMessage);
             }
         }
-    }
 
+        @Override
+        public void onClose() {
+            super.onClose();
+            changeStatus(ConnectionStatus.Disconnected, "已断开");
+        }
+    };
+
+    public interface QuickerConnectListener {
+        void statusUpdate(ConnectionStatus status, String message);
+    }
 }
+

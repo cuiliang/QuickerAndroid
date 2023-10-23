@@ -19,17 +19,13 @@ import androidx.annotation.NonNull;
 import com.cuiliang.quicker.ui.BaseVBActivity;
 import com.cuiliang.quicker.ui.EmptyViewModel;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.List;
 
 import cuiliang.quicker.client.ClientConfig;
+import cuiliang.quicker.client.ClientManager;
 import cuiliang.quicker.client.ClientService;
 import cuiliang.quicker.client.ConnectionStatus;
 import cuiliang.quicker.databinding.ActivityConfigBinding;
-import cuiliang.quicker.events.ConnectionStatusChangedEvent;
 import cuiliang.quicker.util.ToastUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -128,8 +124,7 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
     @Override
     protected void onStart() {
         super.onStart();
-
-        EventBus.getDefault().register(this);
+        ClientManager.getInstance().addConnectListener(listener);
 
         // 绑定到后台服务
         Intent clientServiceIntent = new Intent(this, ClientService.class);
@@ -142,7 +137,7 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
     @Override
     protected void onStop() {
         super.onStop();
-        EventBus.getDefault().unregister(this);
+        ClientManager.getInstance().removeConnectListener(listener);
         if (clientService != null) {
             clientService = null;
             unbindService(conn);
@@ -164,23 +159,6 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
             if (parts.length > 3) {
                 getMBinding().txtConnectionCode.setText(parts[3]);
             }
-        }
-    }
-
-    /**
-     * 更新连接状态显示
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onEventMainThread(ConnectionStatusChangedEvent event) {
-        updateConnectionStatus(event.status, event.message);
-
-        if (event.status == ConnectionStatus.LoggedIn) {
-            ToastUtils.showShort(this, "连接成功！");
-            Intent goMainActivity = new Intent(this, MainActivity.class);
-            goMainActivity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(goMainActivity);
         }
     }
 
@@ -265,5 +243,16 @@ public class ConfigActivity extends BaseVBActivity<ActivityConfigBinding, EmptyV
         public void onServiceDisconnected(ComponentName name) {
             clientService = null;
         }
+    };
+
+    private final ClientManager.QuickerConnectListener listener = (status, message) -> {
+        getMHandler().post(() -> {
+            updateConnectionStatus(status, message);
+            if (status != ConnectionStatus.LoggedIn) return;
+            ToastUtils.showShort(this, "连接成功！");
+            Intent goMainActivity = new Intent(this, MainActivity.class);
+            goMainActivity.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(goMainActivity);
+        });
     };
 }

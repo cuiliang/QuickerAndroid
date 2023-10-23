@@ -15,7 +15,7 @@ import cuiliang.quicker.util.ToastUtils
  * 用于解析PC请求
  * @see MsgRequestData
  */
-object ServerRequestFactory {
+object ServiceRequestFactory {
     private val mHandler=Handler(Looper.getMainLooper())
     fun decodeRequest(ctx: Context, data: MsgRequestData) {
         when (data.extData) {

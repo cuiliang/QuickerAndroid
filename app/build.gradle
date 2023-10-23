@@ -75,6 +75,7 @@ dependencies {
     implementation project(":q_base")
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.code.gson:gson:2.10.1'
+    //mina-core依赖slf4j-android
     implementation files('libs/slf4j-android-1.6.1-RC1.jar')
     implementation files('libs/mina-core-2.0.18.jar')
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
