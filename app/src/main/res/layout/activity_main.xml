@@ -5,27 +5,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#606060"
-    android:screenOrientation="landscape"
+    android:screenOrientation="portrait"
     android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-    tools:context="cuiliang.quicker.MainActivity"
-    tools:layout_editor_absoluteY="73dp">
+    tools:context="cuiliang.quicker.MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/landscape_margin"
-        android:layout_marginEnd="@dimen/landscape_margin"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
         android:gravity="bottom"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/contextView">
 
         <ImageButton
             android:id="@+id/btnMute"
             style="@android:style/Widget.DeviceDefault.Light.ImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:padding="3dp"
             android:scaleType="fitCenter"
@@ -33,34 +37,12 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <SeekBar
-            android:id="@+id/seekbarVolume"
-            style="@style/Widget.AppCompat.SeekBar"
-            android:layout_width="180dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/btnMute"
-            app:layout_constraintTop_toTopOf="@+id/btnMute"
-            app:layout_constraintVertical_bias="0.0" />
-
-
-<!--        <TextView-->
-<!--            android:id="@+id/txtProfileName"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginStart="8dp"-->
-<!--            android:layout_marginBottom="8dp"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="TextView"-->
-<!--            app:layout_constraintBottom_toBottomOf="@+id/seekbarVolume"-->
-<!--            app:layout_constraintStart_toEndOf="@+id/seekbarVolume" />-->
-
         <ImageButton
             android:id="@+id/btnVoice"
             style="@android:style/Widget.DeviceDefault.Light.ImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:padding="3dp"
             android:scaleType="fitCenter"
@@ -74,6 +56,7 @@
             style="@android:style/Widget.DeviceDefault.Light.ImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:padding="3dp"
             android:scaleType="fitCenter"
@@ -87,6 +70,7 @@
             style="@android:style/Widget.DeviceDefault.Light.ImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:padding="3dp"
             android:scaleType="fitCenter"
@@ -100,6 +84,7 @@
             style="@android:style/Widget.DeviceDefault.Light.ImageButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="2dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:padding="3dp"
             android:scaleType="fitCenter"
@@ -108,26 +93,38 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/seekbarVolume" />
 
+        <SeekBar
+            android:id="@+id/seekbarVolume"
+            style="@style/Widget.AppCompat.SeekBar"
+            android:layout_width="180dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="2dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnMute"
+            app:layout_constraintTop_toTopOf="@+id/btnMute"
+            app:layout_constraintVertical_bias="0.0" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
     <include
         android:id="@+id/linearLayout2"
-        layout="@layout/layout_page_center_info_landscape"
+        layout="@layout/layout_page_center_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/contextView"
+        app:layout_constraintTop_toBottomOf="@+id/globalView" />
 
     <cuiliang.quicker.view.DataPageViewPager
         android:id="@+id/globalView"
         style="@style/DataPageViewTheme"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toStartOf="@+id/contextView"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintHorizontal_weight="3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
-        android:layout_marginEnd="7dp"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constraintVertical_weight="3" />
 
     <cuiliang.quicker.view.DataPageViewPager
         android:id="@+id/contextView"
@@ -135,8 +132,7 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        android:layout_marginStart="7dp"
-        app:layout_constraintHorizontal_weight="4"
-        app:layout_constraintStart_toEndOf="@+id/globalView"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintVertical_weight="4" />
 </androidx.constraintlayout.widget.ConstraintLayout>

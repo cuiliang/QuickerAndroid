@@ -15,10 +15,10 @@ import org.junit.runner.RunWith
 class ExampleInstrumentedTest {
     @Test
     fun connect() {
-        ClientConfig.getInstance().enableHttps = true
-        ClientConfig.getInstance().mServerHost = "192.168.1.100"
-        ClientConfig.getInstance().mServerPort = "668"
-        ClientConfig.getInstance().ConnectionCode = "aaa"
+        ClientConfig.instance.enableHttps = true
+        ClientConfig.instance.mServerHost = "192.168.1.100"
+        ClientConfig.instance.mServerPort = "668"
+        ClientConfig.instance.ConnectionCode = "aaa"
         WebSocketClient.instance().connectRequest { result, msg ->
             if (!result)
                 println("服务连接失败：$msg")

@@ -1,8 +1,6 @@
 package com.cuiliang.quicker.ui
 
 import android.os.Bundle
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
 
 /**
  * Created by voidcom on 2023/10/7

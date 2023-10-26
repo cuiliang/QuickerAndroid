@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.cuiliang.quicker.ui.BaseComposableActivity
 import cuiliang.quicker.R
@@ -50,7 +51,7 @@ import kotlinx.coroutines.withContext
 class ShareActivity : BaseComposableActivity<ShareViewModel>() {
     var startActivityShowShareConfig: Boolean = false
 
-    override val mViewModel: ShareViewModel by lazy { ShareViewModel() }
+    override val mViewModel: ShareViewModel by lazy { ViewModelProvider(this)[ShareViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

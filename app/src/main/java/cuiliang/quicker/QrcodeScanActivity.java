@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.cuiliang.quicker.ui.BaseVBActivity;
 import com.cuiliang.quicker.ui.EmptyViewModel;
@@ -26,7 +27,7 @@ public class QrcodeScanActivity extends BaseVBActivity<ActivityQrcodeScanBinding
     @NonNull
     @Override
     protected EmptyViewModel getMViewModel() {
-        return new EmptyViewModel();
+        return new ViewModelProvider(this).get(EmptyViewModel.class);
     }
 
     @Override

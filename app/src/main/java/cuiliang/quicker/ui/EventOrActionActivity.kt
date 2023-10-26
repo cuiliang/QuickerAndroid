@@ -8,6 +8,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModelProvider
 import com.cuiliang.quicker.ui.BaseVBActivity
 import com.cuiliang.quicker.ui.EmptyViewModel
 import cuiliang.quicker.adapter.EventOrActionAdapter
@@ -31,7 +32,7 @@ class EventOrActionActivity : BaseVBActivity<FragmentMyTaskBinding, EmptyViewMod
     private lateinit var eventOrActionAdapter: EventOrActionAdapter
     private var dataType = 0
 
-    override val mViewModel: EmptyViewModel by lazy { EmptyViewModel() }
+    override val mViewModel: EmptyViewModel by lazy { ViewModelProvider(this)[EmptyViewModel::class.java] }
 
     override fun onInit() {
         eventOrActionAdapter = EventOrActionAdapter(this) {

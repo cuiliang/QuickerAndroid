@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.ViewModelProvider
 import com.cuiliang.quicker.ui.BaseDBActivity
 import cuiliang.quicker.R
 import cuiliang.quicker.databinding.ActivityTaskEditBinding
@@ -25,7 +26,7 @@ class TaskEditActivity : BaseDBActivity<ActivityTaskEditBinding, TaskEditViewMod
 
     private var mBinder: TaskManagerService.TaskManagerBinder? = null
 
-    override val mViewModel: TaskEditViewModel by lazy { TaskEditViewModel() }
+    override val mViewModel: TaskEditViewModel by lazy { ViewModelProvider(this)[TaskEditViewModel::class.java] }
 
     override fun getLayoutID(): Int = R.layout.activity_task_edit
 

@@ -124,7 +124,7 @@ class WebSocketClient private constructor() : WebSocketListener() {
             connState == ConnectionStatus.Connecting
         ) return
         this.resultCallback = callback
-        val url = ClientConfig.getInstance().applyAddress()
+        val url = ClientConfig.instance.applyAddress()
         if (url.isEmpty()) return
         connState = ConnectionStatus.Connecting
         val request = Request.Builder().get().url(url).build()
@@ -175,7 +175,7 @@ class WebSocketClient private constructor() : WebSocketListener() {
         override fun onRequest(data: MsgRequestData): MsgRequestData {
             return data.setData(
                 type = MessageType.REQUEST_AUTH.getValue(),
-                data = ClientConfig.getInstance().webSocketCode
+                data = ClientConfig.instance.webSocketCode
             )
         }
 

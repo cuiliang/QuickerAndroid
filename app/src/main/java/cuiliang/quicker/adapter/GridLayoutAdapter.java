@@ -44,6 +44,7 @@ public class GridLayoutAdapter extends PagerAdapter {
 
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+        if (items.size() == 1) return;
         container.removeView(items.get(position));
     }
 

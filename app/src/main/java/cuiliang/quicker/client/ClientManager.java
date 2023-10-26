@@ -42,17 +42,17 @@ public class ClientManager {
 
     // 连接状态
     private ConnectionStatus _status = ConnectionStatus.Disconnected;
-    private final HashSet<QuickerConnectListener> connectListeners=new HashSet<>();
+    private final HashSet<QuickerConnectListener> connectListeners = new HashSet<>();
 
     public static ClientManager getInstance() {
-        if (clientManager == null) throw new NullPointerException(
-                "ClientManager还没有初始化，请在bindService成功连接后再调用");
+        if (clientManager == null) {
+            clientManager = new ClientManager();
+        }
         return clientManager;
     }
 
 
     public ClientManager() {
-        clientManager = this;
         QuickerServiceHandler.Companion.getInstant().addListener(listener);
     }
 
@@ -80,7 +80,7 @@ public class ClientManager {
      * @param retry
      */
     public void connect(final int retry, final ConnectServiceCallback callback) {
-        if (!ClientConfig.getInstance().hasCache()) return;
+        if (!ClientConfig.Companion.getInstance().hasCache()) return;
         //已连接的情况不再重复连接
         if (_status != ConnectionStatus.Disconnected && _status != ConnectionStatus.LoginFailed)
             return;
@@ -113,19 +113,13 @@ public class ClientManager {
 
         //设置 handler 处理业务逻辑
         _connector.setHandler(QuickerServiceHandler.Companion.getInstant());
-        InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.getInstance().mServerHost, Integer.parseInt(ClientConfig.getInstance().mServerPort));
-        Log.i(TAG, "当前进行连接的IP:" + ClientConfig.getInstance().mServerHost + ";端口：" + ClientConfig.getInstance().mServerPort);
+        InetSocketAddress mSocketAddress = new InetSocketAddress(ClientConfig.Companion.getInstance().getMServerHost(), Integer.parseInt(ClientConfig.Companion.getInstance().getMServerPort()));
+        Log.i(TAG, "当前进行连接的IP:" + ClientConfig.Companion.getInstance().getMServerHost() + ";端口：" + ClientConfig.Companion.getInstance().getMServerPort());
         //配置服务器地址
         int count = 0;
         do {
-
             try {
-
-                if (count > 0) {
-                    Thread.sleep(2000);
-                }
-
-
+                if (count > 0) Thread.sleep(2000);
                 Log.d(TAG, "开始连接服务器...");
                 changeStatus(ConnectionStatus.Connecting, "");
 
@@ -139,32 +133,21 @@ public class ClientManager {
                     changeStatus(ConnectionStatus.Disconnected, e.getLocalizedMessage());
                 } else {
                     _session = mFuture.getSession();
-
                     Log.d(TAG, "连接服务器成功...");
                     if (callback != null) callback.connectCallback(true, null);
                     changeStatus(ConnectionStatus.Connected, "");
-
-                    //
                     sendLoginMsg();
-
                     break;
                 }
-
-
             } catch (Exception e) {
-                Log.e(TAG, "连接服务器错误！" + e.toString());
+                Log.e(TAG, "连接服务器错误！" + e);
                 if (callback != null) callback.connectCallback(false, null);
-
                 releaseConnector();
                 changeStatus(ConnectionStatus.Disconnected, "");
-
                 e.printStackTrace();
             }
-
             count++;
         } while (count < retryCount);
-
-
     }
 
     /**
@@ -174,8 +157,8 @@ public class ClientManager {
      */
     private void changeStatus(ConnectionStatus status, String message) {
         _status = status;
-        for (QuickerConnectListener l:connectListeners){
-            l.statusUpdate(_status,message);
+        for (QuickerConnectListener l : connectListeners) {
+            l.statusUpdate(_status, message);
         }
     }
 
@@ -225,7 +208,7 @@ public class ClientManager {
 
     public void sendLoginMsg() {
         DeviceLoginMessage msg = new DeviceLoginMessage();
-        msg.ConnectionCode = ClientConfig.getInstance().ConnectionCode;
+        msg.ConnectionCode = ClientConfig.Companion.getInstance().getConnectionCode();
         msg.Version = BuildConfig.VERSION_NAME;
         msg.DeviceName = Build.MODEL + "(" + Build.MANUFACTURER + " " + Build.PRODUCT + ")";
 
@@ -331,11 +314,11 @@ public class ClientManager {
         sendMessage(msg);
     }
 
-    public void addConnectListener(QuickerConnectListener l){
+    public void addConnectListener(QuickerConnectListener l) {
         connectListeners.add(l);
     }
 
-    public void removeConnectListener(QuickerConnectListener l){
+    public void removeConnectListener(QuickerConnectListener l) {
         connectListeners.remove(l);
     }
 

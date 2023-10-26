@@ -39,7 +39,6 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>
@@ -49,7 +48,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ConfigActivity"
+            android:name=".ui.ConfigActivity"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -13,6 +13,10 @@ fun View.gone() {
     visibility = View.GONE
 }
 
+fun View.invisible() {
+    visibility = View.INVISIBLE
+}
+
 internal fun View.setVisible(visible: Boolean) {
     visibility = if (visible)
         View.VISIBLE

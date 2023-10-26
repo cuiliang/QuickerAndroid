@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 class ClientService : Service(), ConnectServiceCallback {
-    private val binder = LocalBinder()
+    private val mBinder: LocalBinder by lazy { LocalBinder() }
     private val mExecutor = ThreadPoolExecutor(
         1,
         10,
@@ -35,63 +35,40 @@ class ClientService : Service(), ConnectServiceCallback {
         TimeUnit.SECONDS,
         ArrayBlockingQueue(1)
     )
-
-    /**
-     * 返回ClientManager
-     */
-    var clientManager: ClientManager? = null
-        private set
     private var wifiStatusChangeReceiver: NetworkStatusChangeReceiver? = null
     private val ipItems: MutableList<String> = LinkedList()
     private var ipIndex = 0
 
-    /**
-     * 创建Binder对象，返回给客户端activity使用，提供数据交换的接口
-     */
-    inner class LocalBinder : Binder() {
-        val service: ClientService
-            /**
-             * 返回当前service对象
-             */
-            get() = this@ClientService
-    }
 
     /**
      * 最后收到消息的记录
      */
-    @JvmField
-    val messageCache = MessageCache()
+    private val messageCache = MessageCache()
     override fun onCreate() {
-        Log.d(TAG, "onCreate")
         super.onCreate()
         createNotification()
-        //
         // wifi 监控
-        val filter = IntentFilter()
-        //filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
-        filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
-        //filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         wifiStatusChangeReceiver = NetworkStatusChangeReceiver(netChangeCallback)
-        registerReceiver(wifiStatusChangeReceiver, filter)
+        registerReceiver(wifiStatusChangeReceiver, IntentFilter().apply {
+            addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
+            //addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+            //addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        })
         instant.addListener(listener)
 
         // 启动网络连接
         Log.d(
             TAG,
-            "连接服务器：" + ClientConfig.getInstance().mServerHost + ":" + ClientConfig.getInstance().mServerPort
+            "连接服务器：${ClientConfig.instance.mServerHost}:${ClientConfig.instance.mServerPort}"
         )
-        clientManager = ClientManager()
         mExecutor.execute {
             ipItems.clear()
             ipItems.addAll(ScanDeviceUtils.getInstant().scan())
-            clientManager!!.connect(1, this@ClientService)
+            ClientManager.getInstance().connect(1, this@ClientService)
         }
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        Log.d(TAG, "onBind")
-        return binder
-    }
+    override fun onBind(intent: Intent): IBinder = mBinder
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
@@ -100,7 +77,7 @@ class ClientService : Service(), ConnectServiceCallback {
         if (wifiStatusChangeReceiver != null) {
             unregisterReceiver(wifiStatusChangeReceiver)
         }
-        clientManager!!.shutdown()
+        ClientManager.getInstance().shutdown()
         instance().closeRequest()
     }
 
@@ -117,10 +94,10 @@ class ClientService : Service(), ConnectServiceCallback {
     override fun connectCallback(isSuccess: Boolean, obj: Any?) {
         if (isSuccess) {
             Log.i(TAG, "自动连接尝试连接成功")
-            ClientConfig.getInstance().saveConfig()
+            ClientConfig.instance.saveConfig()
         } else {
             Log.e(TAG, "尝试自动连接失败")
-            if (!ipItems.isEmpty() && ipIndex < ipItems.size) {
+            if (ipItems.isNotEmpty() && ipIndex < ipItems.size) {
                 val tmp = ipItems[ipIndex++]
                 /*
                  * 这里检测IP是否是192.168开头，不是这个开头的ip不进行自动登录。
@@ -130,8 +107,8 @@ class ClientService : Service(), ConnectServiceCallback {
                  * 后续应该增加一个取消自动连接按钮。因为局域网内有255个设备，那么会连接244次。
                  * 这个时间非常长。当然很难遇到
                  * */if (tmp.startsWith("192.168")) {
-                    ClientConfig.getInstance().mServerHost = tmp
-                    clientManager!!.connect(1, this)
+                    ClientConfig.instance.mServerHost = tmp
+                    ClientManager.getInstance().connect(1, this)
                 } else {
                     connectCallback(false, null)
                 }
@@ -141,37 +118,40 @@ class ClientService : Service(), ConnectServiceCallback {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun createNotification() {
-        val notification: NotificationCompat.Builder
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-            val channel =
-                NotificationChannel(packageName, "Quicker", NotificationManager.IMPORTANCE_HIGH)
-            channel.enableLights(true)
-            channel.description = "Quicker 连接服务"
-            channel.setShowBadge(true)
-            channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            val channel = NotificationChannel(
+                packageName,
+                "Quicker",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                enableLights(true)
+                description = "Quicker 连接服务"
+                setShowBadge(true)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+            }
             manager.createNotificationChannel(channel)
-            notification = NotificationCompat.Builder(this, packageName)
+            NotificationCompat.Builder(this, packageName)
         } else {
-            notification = NotificationCompat.Builder(this)
+            NotificationCompat.Builder(this)
         }
-        val notification1 = notification.setContentTitle("Quicker")
-            .setContentText("Quicker 连接服务")
-            .setWhen(System.currentTimeMillis())
-            .setSmallIcon(R.mipmap.ic_launcher)
-            .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // 7.0 设置优先级
-            .build()
-        startForeground(1, notification1)
+        startForeground(
+            1, notificationBuilder.setContentTitle("Quicker")
+                .setContentText("Quicker 连接服务")
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher))
+                .setPriority(NotificationCompat.PRIORITY_HIGH) // 7.0 设置优先级
+                .build()
+        )
     }
 
     private val netChangeCallback: NetChangeCallback = object : NetChangeCallback {
         override fun onChange(connected: Boolean) {
             Log.w(TAG, "收到wifi连接状态变更：$connected")
-            if (connected && clientManager!!.connectionStatus == ConnectionStatus.Disconnected) {
-                clientManager!!.connect(3, null)
-            }
+            ClientManager.getInstance().connect(3, null)
         }
     }
 
@@ -183,6 +163,13 @@ class ClientService : Service(), ConnectServiceCallback {
                 is VolumeStateMessage -> messageCache.lastVolumeStateMessage = msg
             }
         }
+    }
+
+    /**
+     * 创建Binder对象，返回给客户端activity使用，提供数据交换的接口
+     */
+    inner class LocalBinder : Binder() {
+        fun getMsgCache(): MessageCache = messageCache
     }
 
     companion object {
